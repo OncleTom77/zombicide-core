@@ -1,6 +1,6 @@
 # Zombicide core
 
-Zombicide core is a project that implement the main mechanisms of the board game Zombicide.
+Zombicide core is a project that implements the main mechanisms of the board game Zombicide.
 
 ## Step by step implementation
 

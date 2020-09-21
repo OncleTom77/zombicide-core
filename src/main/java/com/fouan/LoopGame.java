@@ -6,16 +6,22 @@ import javax.inject.Named;
 @Named
 public class LoopGame {
 
+    private final CommandInput commandInput;
+    private final Output output;
+
     @Inject
-    public LoopGame() {
+    public LoopGame(CommandInput commandInput, Output output) {
+        this.commandInput = commandInput;
+        this.output = output;
     }
 
-    public void run() {
-        while (true) {
-            System.out.println("new turn");
-            break;
+    public void run(Board board) {
+        do {
+            board.displayBoard();
+            output.println("new turn");
 
             // survivors' phase
+            commandInput.next().execute(board);
             // check potential survivors victory
 
             // zombies' phase
@@ -23,6 +29,7 @@ public class LoopGame {
 
             // zombies invasion
             // check potential survivors defeat
-        }
+        } while (!board.isObjectiveComplete());
+        output.println("You won. End of the game!");
     }
 }
