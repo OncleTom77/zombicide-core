@@ -2,6 +2,7 @@ package com.fouan;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Random;
 
 @Named
 public class Game {
@@ -10,9 +11,9 @@ public class Game {
     private final Board board;
 
     @Inject
-    public Game(LoopGame loopGame, Output output) {
+    public Game(LoopGame loopGame, Output output, Random random) {
         this.loopGame = loopGame;
-        this.board = new Board(output);
+        this.board = new Board(output, random);
     }
 
     public void start() {

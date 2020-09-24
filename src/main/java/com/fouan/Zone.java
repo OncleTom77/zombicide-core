@@ -29,4 +29,8 @@ public class Zone {
     public String toString() {
         return "Zone{" + position + '}';
     }
+
+    boolean isOn(Position position) {
+        return this.position.equals(position);
+    }
 }

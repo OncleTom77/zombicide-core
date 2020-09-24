@@ -6,12 +6,12 @@ import javax.inject.Named;
 @Named
 public class LoopGame {
 
-    private final CommandInput commandInput;
+    private final ActionDecision actionDecision;
     private final Output output;
 
     @Inject
-    public LoopGame(CommandInput commandInput, Output output) {
-        this.commandInput = commandInput;
+    public LoopGame(ActionDecision actionDecision, Output output) {
+        this.actionDecision = actionDecision;
         this.output = output;
     }
 
@@ -21,15 +21,20 @@ public class LoopGame {
             output.println("new turn");
 
             // survivors' phase
-            commandInput.next().execute(board);
+            actionDecision.next().execute(board.getSurvivor());
+
             // check potential survivors victory
+            if (board.isObjectiveComplete()) {
+                break;
+            }
 
             // zombies' phase
+            board.playZombiePhase();
             // check potential survivors defeat
 
             // zombies invasion
             // check potential survivors defeat
-        } while (!board.isObjectiveComplete());
+        } while (true);
         output.println("You won. End of the game!");
     }
 }

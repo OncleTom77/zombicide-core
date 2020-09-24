@@ -18,17 +18,17 @@ public class Move implements Action {
     }
 
     @Override
-    public void execute(Board board) {
-        List<Zone> connectedZones = board.getSurvivor().getZone().getConnectedZones();
+    public void execute(Survivor survivor) {
+        List<Zone> connectedZones = survivor.getZone().getConnectedZones();
 
-        output.println("You are here: " + board.getSurvivor().getZone());
+        output.println("You are here: " + survivor.getZone());
         output.println("Choose between these zones:");
         for (int i = 0; i < connectedZones.size(); i++) {
             output.println(i + ": " + connectedZones.get(i));
         }
 
         int choice = getChoice(connectedZones.size() - 1);
-        board.getSurvivor().changeZone(connectedZones.get(choice));
+        survivor.changeZone(connectedZones.get(choice));
     }
 
     private int getChoice(int max) {
