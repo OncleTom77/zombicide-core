@@ -43,6 +43,8 @@ Zombicide core is a project that implements the main mechanisms of the board gam
 
 ### 6. Zombie invasion phase
 
+- ask survivor which zombie to hit when there is more than one zombie is his Zone
+
 ### 7. Zombies move to the survivor (no more random)
 
 ### 8. Introduce buildings (without closed doors for now)

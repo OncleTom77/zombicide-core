@@ -1,4 +1,4 @@
-package com.fouan;
+package com.fouan.board;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 public class Zone {
 
     private final Position position;
-    private List<Zone> connectedZones;
+    private final List<Zone> connectedZones;
 
     public Zone(Position position) {
         this.position = position;

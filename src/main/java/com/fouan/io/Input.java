@@ -1,4 +1,4 @@
-package com.fouan;
+package com.fouan.io;
 
 public interface Input {
 

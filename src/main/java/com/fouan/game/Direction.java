@@ -1,4 +1,6 @@
-package com.fouan;
+package com.fouan.game;
+
+import com.fouan.board.Position;
 
 import java.util.function.Function;
 

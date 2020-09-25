@@ -1,4 +1,6 @@
-package com.fouan;
+package com.fouan.character;
+
+import com.fouan.board.Zone;
 
 public class Survivor {
     private Zone zone;

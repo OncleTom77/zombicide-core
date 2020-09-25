@@ -1,6 +1,8 @@
-package com.fouan;
+package com.fouan.game;
 
-import javax.inject.Inject;
+import com.fouan.board.Board;
+import com.fouan.io.Output;
+
 import javax.inject.Named;
 
 @Named
@@ -9,7 +11,6 @@ public class LoopGame {
     private final ActionDecision actionDecision;
     private final Output output;
 
-    @Inject
     public LoopGame(ActionDecision actionDecision, Output output) {
         this.actionDecision = actionDecision;
         this.output = output;
@@ -18,7 +19,7 @@ public class LoopGame {
     public void run(Board board) {
         do {
             board.displayBoard();
-            output.println("new turn");
+            output.display("new turn");
 
             // survivors' phase
             actionDecision.next().execute(board.getSurvivor());
@@ -35,6 +36,6 @@ public class LoopGame {
             // zombies invasion
             // check potential survivors defeat
         } while (true);
-        output.println("You won. End of the game!");
+        output.display("You won. End of the game!");
     }
 }

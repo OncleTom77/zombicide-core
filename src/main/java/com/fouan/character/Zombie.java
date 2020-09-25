@@ -1,4 +1,6 @@
-package com.fouan;
+package com.fouan.character;
+
+import com.fouan.board.Zone;
 
 import java.util.List;
 import java.util.Random;

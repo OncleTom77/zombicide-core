@@ -1,4 +1,4 @@
-package com.fouan;
+package com.fouan.io;
 
 import javax.inject.Named;
 import java.util.InputMismatchException;
@@ -23,7 +23,7 @@ public class CommandLineInput implements Input {
             } catch (InputMismatchException ignored) {
                 scanner.next();
             }
-            output.println("Try again");
+            output.display("Try again");
         } while (true);
     }
 }

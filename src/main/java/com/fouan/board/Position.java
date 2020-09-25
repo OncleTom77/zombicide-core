@@ -1,4 +1,4 @@
-package com.fouan;
+package com.fouan.board;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

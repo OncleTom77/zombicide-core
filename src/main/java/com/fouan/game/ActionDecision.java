@@ -1,4 +1,6 @@
-package com.fouan;
+package com.fouan.game;
+
+import com.fouan.action.Action;
 
 import javax.inject.Named;
 

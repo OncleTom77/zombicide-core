@@ -1,4 +1,9 @@
-package com.fouan;
+package com.fouan.board;
+
+import com.fouan.character.Survivor;
+import com.fouan.character.Zombie;
+import com.fouan.game.Direction;
+import com.fouan.io.Output;
 
 import java.util.*;
 
@@ -83,30 +88,35 @@ public class Board {
         }
         horizontalLine.append("-");
 
+        StringBuilder stringBuilder = new StringBuilder();
+        output.display(horizontalLine.toString());
         for (int i = 0, zonesSize = zones.size(); i < zonesSize; i++) {
-            if (i % height == 0) {
-                output.println(horizontalLine.toString());
-            }
             Zone zone = zones.get(i);
-            printZone(zone, i % height == height - 1);
+            stringBuilder.append(toString(zone));
+
+            boolean endOfLine = i % height == height - 1;
+            if (endOfLine) {
+                stringBuilder.append("|");
+                output.display(stringBuilder.toString());
+                stringBuilder.delete(0, stringBuilder.length());
+                output.display(horizontalLine.toString());
+            }
         }
-        output.println(horizontalLine.toString());
     }
 
-    private void printZone(Zone zone, boolean displayEndOfLine) {
+    private String toString(Zone zone) {
+        StringBuilder stringBuilder = new StringBuilder();
         if (zone.equals(survivor.getZone())) {
-            output.print("| O ");
+            stringBuilder.append("| O ");
         } else if (zone.equals(zombie.getZone())) {
-            output.print("| Z ");
+            stringBuilder.append("| Z ");
         }  else if (zone.equals(survivorStartingZone)) {
-            output.print("| S ");
+            stringBuilder.append("| S ");
         } else if (zone.equals(exitZone)) {
-            output.print("| E ");
+            stringBuilder.append("| E ");
         } else {
-            output.print("|   ");
+            stringBuilder.append("|   ");
         }
-        if (displayEndOfLine) {
-            output.println("|");
-        }
+        return stringBuilder.toString();
     }
 }
