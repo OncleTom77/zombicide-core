@@ -4,6 +4,8 @@ import com.fouan.character.Survivor;
 import com.fouan.character.Zombie;
 import com.fouan.game.Direction;
 import com.fouan.io.Output;
+import com.fouan.weapon.Axe;
+import com.fouan.weapon.DiceRoller;
 
 import java.util.*;
 
@@ -11,6 +13,7 @@ public class Board {
 
     private final Output output;
     private final Random random;
+    private final DiceRoller diceRoller;
     private List<Zone> zones;
     private Zone survivorStartingZone;
     private Zone exitZone;
@@ -19,9 +22,10 @@ public class Board {
     private int width;
     private int height;
 
-    public Board(Output output, Random random) {
+    public Board(Output output, Random random, DiceRoller diceRoller) {
         this.output = output;
         this.random = random;
+        this.diceRoller = diceRoller;
     }
 
     public void init() {
@@ -31,13 +35,14 @@ public class Board {
         zones = initZones(width, height);
         survivorStartingZone = getZone(0, 0).orElseThrow(IllegalArgumentException::new);
         exitZone = getZone(width - 1, height - 1).orElseThrow(IllegalArgumentException::new);
-        survivor = new Survivor(survivorStartingZone);
+        survivor = new Survivor(survivorStartingZone, new Axe(diceRoller, output));
         zombie = initZombie(random, zones);
     }
 
     private Zombie initZombie(Random random, List<Zone> zones) {
         int randomZoneIndex = random.nextInt(zones.size());
         Zone zombieStartingZone = zones.get(randomZoneIndex);
+//        zombieStartingZone = survivorStartingZone; //FIXME: remove line:
         return new Zombie(zombieStartingZone, random);
     }
 
@@ -78,7 +83,14 @@ public class Board {
     }
 
     public void playZombiePhase() {
-        zombie.move();
+        if (zombie != null) {
+            zombie.move();
+        }
+    }
+
+    public void removeZombie() {
+        zones.forEach(zone -> zone.removeZombie(zombie));
+        zombie = null;
     }
 
     public void displayBoard() {
@@ -108,9 +120,9 @@ public class Board {
         StringBuilder stringBuilder = new StringBuilder();
         if (zone.equals(survivor.getZone())) {
             stringBuilder.append("| O ");
-        } else if (zone.equals(zombie.getZone())) {
+        } else if (zombie != null && zone.equals(zombie.getZone())) {
             stringBuilder.append("| Z ");
-        }  else if (zone.equals(survivorStartingZone)) {
+        } else if (zone.equals(survivorStartingZone)) {
             stringBuilder.append("| S ");
         } else if (zone.equals(exitZone)) {
             stringBuilder.append("| E ");

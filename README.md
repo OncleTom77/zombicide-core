@@ -65,4 +65,5 @@ Zombicide core is a project that implements the main mechanisms of the board gam
 - new objectives: retrieve specific items on the board
 - new Zombie Invasion card (additional Zombie Activation)
 - line of sight
-- Survivor skills
+- Survivor skills, experience, danger level
+- multiple weapons, body equipments

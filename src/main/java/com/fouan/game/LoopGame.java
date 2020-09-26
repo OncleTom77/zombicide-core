@@ -19,10 +19,10 @@ public class LoopGame {
     public void run(Board board) {
         do {
             board.displayBoard();
-            output.display("new turn");
+            output.display("New turn");
 
             // survivors' phase
-            actionDecision.next().execute(board.getSurvivor());
+            actionDecision.next(board.getSurvivor()).execute(board.getSurvivor(), board);
 
             // check potential survivors victory
             if (board.isObjectiveComplete()) {

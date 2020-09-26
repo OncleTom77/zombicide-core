@@ -12,10 +12,13 @@ public class Zombie {
     public Zombie(Zone initialZone, Random random) {
         this.zone = initialZone;
         this.random = random;
+        initialZone.addZombie(this);
     }
 
     private void changeZone(Zone zone) {
+        this.zone.removeZombie(this);
         this.zone = zone;
+        zone.addZombie(this);
     }
 
     public Zone getZone() {

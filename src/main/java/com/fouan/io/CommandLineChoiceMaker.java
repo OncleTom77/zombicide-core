@@ -5,18 +5,29 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 @Named
-public class CommandLineInput implements Input {
+public class CommandLineChoiceMaker implements ChoiceMaker {
     private final Output output;
     private final Scanner scanner;
 
-    public CommandLineInput(Output output) {
+    public CommandLineChoiceMaker(Output output) {
         this.output = output;
         scanner = new Scanner(System.in);
         scanner.useDelimiter("\\r?\\n|\\r");
     }
 
     @Override
-    public int read() {
+    public int getChoice(int min, int max) {
+        do {
+            int choice = read();
+
+            if (choice >= min && choice <= max) {
+                return choice;
+            }
+            output.display("Try again");
+        } while (true);
+    }
+
+    private int read() {
         do {
             try {
                 return scanner.nextInt();
