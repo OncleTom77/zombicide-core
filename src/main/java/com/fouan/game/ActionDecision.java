@@ -27,10 +27,6 @@ public class ActionDecision {
                 .filter(action -> action.isPossible(survivor))
                 .collect(Collectors.toList());
 
-//        TODO: handle no possible action
-//        if (possibleActions.isEmpty()) {
-//        }
-
         if (possibleActions.size() == 1) {
             return possibleActions.get(0);
         }

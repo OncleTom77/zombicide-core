@@ -35,15 +35,14 @@ public class Board {
         zones = initZones(width, height);
         survivorStartingZone = getZone(0, 0).orElseThrow(IllegalArgumentException::new);
         exitZone = getZone(width - 1, height - 1).orElseThrow(IllegalArgumentException::new);
-        survivor = new Survivor(survivorStartingZone, new Axe(diceRoller, output));
-        zombie = initZombie(random, zones);
+        survivor = new Survivor(survivorStartingZone, new Axe(diceRoller, output), output);
+        zombie = initZombie(random, zones, output);
     }
 
-    private Zombie initZombie(Random random, List<Zone> zones) {
+    private Zombie initZombie(Random random, List<Zone> zones, Output output) {
         int randomZoneIndex = random.nextInt(zones.size());
         Zone zombieStartingZone = zones.get(randomZoneIndex);
-//        zombieStartingZone = survivorStartingZone; //FIXME: remove line:
-        return new Zombie(zombieStartingZone, random);
+        return new Zombie(zombieStartingZone, random, output);
     }
 
     private Optional<Zone> getZone(int x, int y) {
@@ -84,7 +83,7 @@ public class Board {
 
     public void playZombiePhase() {
         if (zombie != null) {
-            zombie.move();
+            zombie.plays();
         }
     }
 
@@ -130,5 +129,9 @@ public class Board {
             stringBuilder.append("|   ");
         }
         return stringBuilder.toString();
+    }
+
+    public boolean hasSurvivorAlive() {
+        return survivor.isAlive();
     }
 }

@@ -20,22 +20,30 @@ public class LoopGame {
         do {
             board.displayBoard();
             output.display("New turn");
+            board.getSurvivor()
+                    .displayWounds();
 
             // survivors' phase
-            actionDecision.next(board.getSurvivor()).execute(board.getSurvivor(), board);
+            actionDecision.next(board.getSurvivor())
+                    .execute(board.getSurvivor(), board);
 
             // check potential survivors victory
             if (board.isObjectiveComplete()) {
+                output.display("You won. End of the game!");
                 break;
             }
 
             // zombies' phase
             board.playZombiePhase();
             // check potential survivors defeat
+            if (!board.hasSurvivorAlive()) {
+                output.display("You lose. End of the game!");
+                break;
+            }
 
             // zombies invasion
             // check potential survivors defeat
         } while (true);
-        output.display("You won. End of the game!");
+
     }
 }

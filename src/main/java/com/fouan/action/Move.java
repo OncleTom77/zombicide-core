@@ -36,7 +36,7 @@ public class Move implements Action {
         }
 
         int choice = choiceMaker.getChoice(0, connectedZones.size() - 1);
-        survivor.changeZone(connectedZones.get(choice));
+        survivor.changesZone(connectedZones.get(choice));
     }
 
     @Override

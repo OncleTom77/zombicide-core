@@ -23,7 +23,7 @@ public class Combat implements Action {
     @Override
     public void execute(Survivor survivor, Board board) {
         output.display("Combat!!!");
-        if (survivor.attack()) {
+        if (survivor.attacks()) {
             output.display("Zombie is dead");
             board.removeZombie();
         }
