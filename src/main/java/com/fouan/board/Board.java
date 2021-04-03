@@ -15,8 +15,6 @@ public class Board {
     private final Random random;
     private final DiceRoller diceRoller;
     private List<Zone> zones;
-    private Zone survivorStartingZone;
-    private Zone exitZone;
     private Survivor survivor;
     private Zombie zombie;
     private int width;
@@ -33,8 +31,10 @@ public class Board {
         height = 6;
 
         zones = initZones(width, height);
-        survivorStartingZone = getZone(0, 0).orElseThrow(IllegalArgumentException::new);
-        exitZone = getZone(width - 1, height - 1).orElseThrow(IllegalArgumentException::new);
+        Zone survivorStartingZone = getZone(0, 0).orElseThrow(IllegalArgumentException::new);
+        survivorStartingZone.addMarker(BoardMarker.STARTING_ZONE);
+        getZone(width - 1, height - 1).orElseThrow(IllegalArgumentException::new)
+                .addMarker(BoardMarker.EXIT_ZONE);
         survivor = new Survivor(survivorStartingZone, new Axe(diceRoller, output), output);
         zombie = initZombie(random, zones, output);
     }
@@ -74,7 +74,7 @@ public class Board {
     }
 
     public boolean isObjectiveComplete() {
-        return survivor.getZone().equals(exitZone);
+        return survivor.getZone().containsMarker(BoardMarker.STARTING_ZONE);
     }
 
     public Survivor getSurvivor() {
@@ -103,7 +103,7 @@ public class Board {
         output.display(horizontalLine.toString());
         for (int i = 0, zonesSize = zones.size(); i < zonesSize; i++) {
             Zone zone = zones.get(i);
-            stringBuilder.append(toString(zone));
+            stringBuilder.append(zone.getStringRepresentation());
 
             boolean endOfLine = i % height == height - 1;
             if (endOfLine) {
@@ -113,22 +113,6 @@ public class Board {
                 output.display(horizontalLine.toString());
             }
         }
-    }
-
-    private String toString(Zone zone) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (zone.equals(survivor.getZone())) {
-            stringBuilder.append("| O ");
-        } else if (zombie != null && zone.equals(zombie.getZone())) {
-            stringBuilder.append("| Z ");
-        } else if (zone.equals(survivorStartingZone)) {
-            stringBuilder.append("| S ");
-        } else if (zone.equals(exitZone)) {
-            stringBuilder.append("| E ");
-        } else {
-            stringBuilder.append("|   ");
-        }
-        return stringBuilder.toString();
     }
 
     public boolean hasSurvivorAlive() {

@@ -39,7 +39,7 @@ Zombicide core is a project that implements the main mechanisms of the board gam
  
 ### 5. Give the survivor 3 Actions per Turn
 
-- check victory of defeat after each action spent
+- check victory or defeat after each action spent
 
 ### 6. Zombie invasion phase
 
@@ -62,8 +62,10 @@ Zombicide core is a project that implements the main mechanisms of the board gam
 - new Zombie types: Fatty, Runner, Abomination
 - new weapons types: ranged, magic, enchantments
 - new Actions: make noise, do nothing, reorganize inventor
-- new objectives: retrieve specific items on the board
+- introduction of scenario with new objectives: retrieve specific items on the board, etc.
 - new Zombie Invasion card (additional Zombie Activation)
 - line of sight
 - Survivor skills, experience, danger level
 - multiple weapons, body equipments
+- multiple survivors
+- import map from file

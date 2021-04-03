@@ -29,7 +29,7 @@ public class LoopGame {
 
             // check potential survivors victory
             if (board.isObjectiveComplete()) {
-                output.display("You won. End of the game!");
+                output.display("You won!");
                 break;
             }
 
@@ -37,7 +37,7 @@ public class LoopGame {
             board.playZombiePhase();
             // check potential survivors defeat
             if (!board.hasSurvivorAlive()) {
-                output.display("You lose. End of the game!");
+                output.display("You lose!");
                 break;
             }
 
@@ -45,5 +45,6 @@ public class LoopGame {
             // check potential survivors defeat
         } while (true);
 
+        output.display("End of the game.");
     }
 }

@@ -12,12 +12,14 @@ public class Zone {
     private final List<Zone> connectedZones;
     private final List<Zombie> zombies;
     private final List<Survivor> survivors;
+    private final List<BoardMarker> markers;
 
     public Zone(Position position) {
         this.position = position;
         connectedZones = new ArrayList<>();
         zombies = new ArrayList<>();
         survivors = new ArrayList<>();
+        markers = new ArrayList<>();
     }
 
     public boolean isOn(Position position) {
@@ -52,6 +54,18 @@ public class Zone {
         return !survivors.isEmpty();
     }
 
+    public void addMarker(BoardMarker marker) {
+        markers.add(marker);
+    }
+
+    public void removeMarker(BoardMarker marker) {
+        markers.remove(marker);
+    }
+
+    public boolean containsMarker(BoardMarker marker) {
+        return markers.contains(marker);
+    }
+
     public Survivor getSurvivor() {
         return survivors.stream()
                 .findFirst()
@@ -69,5 +83,21 @@ public class Zone {
     @Override
     public String toString() {
         return "Zone{" + position + '}';
+    }
+
+    String getStringRepresentation() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (containsSurvivor()) {
+            stringBuilder.append("| O ");
+        } else if (containsZombie()) {
+            stringBuilder.append("| Z ");
+        } else if (containsMarker(BoardMarker.STARTING_ZONE)) {
+            stringBuilder.append("| S ");
+        } else if (containsMarker(BoardMarker.EXIT_ZONE)) {
+            stringBuilder.append("| E ");
+        } else {
+            stringBuilder.append("|   ");
+        }
+        return stringBuilder.toString();
     }
 }
