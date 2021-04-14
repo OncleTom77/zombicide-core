@@ -3,30 +3,32 @@ package com.fouan.weapon;
 import com.fouan.io.Output;
 
 import javax.inject.Named;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
 
 @Named
-public class Axe implements Weapon {
-//    private final boolean dual = true;
-//    private final boolean noisy = false;
-//    private final boolean canOpenDoor = true;
-//    private final boolean noisyOpeningDoor = true;
-//    private final int range = 0;
-//    private final int dice = 1;
-    private static final int accuracy = 4;
-//    private final int damage = 1;
-
+public class Axe extends Weapon {
     private final DiceRoller diceRoller;
     private final Output output;
 
     public Axe(DiceRoller diceRoller, Output output) {
+        super(0, 1, 4);
         this.diceRoller = diceRoller;
         this.output = output;
     }
 
     @Override
-    public boolean hit() {
-        int roll = diceRoller.roll();
-        output.display("Die: " + roll);
-        return roll >= accuracy;
+    public long use() {
+        List<Integer> rolls = IntStream.range(0, dice)
+                .map(value -> diceRoller.roll())
+                .boxed()
+                .collect(toList());
+        output.display("Dice: " + rolls);
+
+        return rolls.stream()
+                .filter(roll -> roll >= accuracy)
+                .count();
     }
 }

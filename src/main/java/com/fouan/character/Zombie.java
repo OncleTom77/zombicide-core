@@ -7,14 +7,16 @@ import java.util.List;
 import java.util.Random;
 
 public class Zombie {
+    private final int damageInflicted = 1;
+
     private Zone zone;
     private final Random random;
     private final Output output;
 
     public Zombie(Zone initialZone, Random random, Output output) {
-        this.zone = initialZone;
         this.random = random;
         this.output = output;
+        this.zone = initialZone;
         initialZone.addZombie(this);
     }
 
@@ -35,7 +37,7 @@ public class Zombie {
     private void fights() {
         output.display("Zombie attacks the survivor!");
         zone.getSurvivor()
-                .suffersInjury();
+                .suffersInjury(damageInflicted);
     }
 
     private boolean canFight() {
@@ -48,9 +50,5 @@ public class Zombie {
         Zone newZone = possibleZones.get(randomZoneIndex);
 
         changesZone(newZone);
-    }
-
-    public Zone getZone() {
-        return zone;
     }
 }

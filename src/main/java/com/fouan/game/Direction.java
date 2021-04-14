@@ -16,7 +16,7 @@ public enum Direction {
         this.compute = compute;
     }
 
-    public Position from(Position position) {
+    public Position apply(Position position) {
         return compute.apply(position);
     }
 }

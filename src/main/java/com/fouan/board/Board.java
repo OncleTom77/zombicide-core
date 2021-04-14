@@ -27,7 +27,7 @@ public class Board {
     }
 
     public void init() {
-        width = 6;
+        width = 9;
         height = 6;
 
         zones = initZones(width, height);
@@ -65,16 +65,18 @@ public class Board {
                 zones.add(new Zone(new Position(i, j)));
             }
         }
-        zones.forEach(zone -> Arrays.stream(Direction.values())
-                .map(direction -> getZone(zones, direction.from(zone.getPosition())))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .forEach(zone::addConnection));
+        connectZones(zones);
         return zones;
     }
 
+    private void connectZones(List<Zone> zones) {
+        zones.forEach(zone -> Arrays.stream(Direction.values())
+                .forEach(direction -> getZone(zones, direction.apply(zone.getPosition()))
+                        .ifPresent(neighborZone -> zone.addConnection(direction, neighborZone))));
+    }
+
     public boolean isObjectiveComplete() {
-        return survivor.getZone().containsMarker(BoardMarker.STARTING_ZONE);
+        return survivor.getZone().containsMarker(BoardMarker.EXIT_ZONE);
     }
 
     public Survivor getSurvivor() {
@@ -99,17 +101,19 @@ public class Board {
         }
         horizontalLine.append("-");
 
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder line = new StringBuilder();
         output.display(horizontalLine.toString());
         for (int i = 0, zonesSize = zones.size(); i < zonesSize; i++) {
             Zone zone = zones.get(i);
-            stringBuilder.append(zone.getStringRepresentation());
+            line.append("| ")
+                    .append(zone.getStringRepresentation())
+                    .append(" ");
 
-            boolean endOfLine = i % height == height - 1;
+            boolean endOfLine = i % width == width - 1;
             if (endOfLine) {
-                stringBuilder.append("|");
-                output.display(stringBuilder.toString());
-                stringBuilder.delete(0, stringBuilder.length());
+                line.append("|");
+                output.display(line.toString());
+                line.delete(0, line.length());
                 output.display(horizontalLine.toString());
             }
         }

@@ -2,21 +2,21 @@ package com.fouan.board;
 
 import com.fouan.character.Survivor;
 import com.fouan.character.Zombie;
+import com.fouan.game.Direction;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Zone {
 
     private final Position position;
-    private final List<Zone> connectedZones;
+    private final Map<Direction, Zone> connectedZones;
     private final List<Zombie> zombies;
     private final List<Survivor> survivors;
     private final List<BoardMarker> markers;
 
     public Zone(Position position) {
         this.position = position;
-        connectedZones = new ArrayList<>();
+        connectedZones = new HashMap<>(4);
         zombies = new ArrayList<>();
         survivors = new ArrayList<>();
         markers = new ArrayList<>();
@@ -26,8 +26,8 @@ public class Zone {
         return this.position.equals(position);
     }
 
-    public void addConnection(Zone zone) {
-        connectedZones.add(zone);
+    public void addConnection(Direction direction, Zone zone) {
+        connectedZones.put(direction, zone);
     }
 
     public void addZombie(Zombie zombie) {
@@ -77,7 +77,23 @@ public class Zone {
     }
 
     public List<Zone> getConnectedZones() {
-        return connectedZones;
+        return new ArrayList<>(connectedZones.values());
+    }
+
+    public Optional<Zone> getConnectedZone(Direction direction) {
+        return Optional.ofNullable(connectedZones.get(direction));
+    }
+
+    public List<Zone> getAllInDirection(Direction direction) {
+        return getAllInDirection(new ArrayList<>(), direction);
+    }
+
+    private List<Zone> getAllInDirection(List<Zone> acc, Direction direction) {
+        getConnectedZone(direction).ifPresent(neighborZone -> {
+            acc.add(neighborZone);
+            neighborZone.getAllInDirection(acc, direction);
+        });
+        return acc;
     }
 
     @Override
@@ -86,18 +102,16 @@ public class Zone {
     }
 
     String getStringRepresentation() {
-        StringBuilder stringBuilder = new StringBuilder();
         if (containsSurvivor()) {
-            stringBuilder.append("| O ");
+            return "O";
         } else if (containsZombie()) {
-            stringBuilder.append("| Z ");
+            return "Z";
         } else if (containsMarker(BoardMarker.STARTING_ZONE)) {
-            stringBuilder.append("| S ");
+            return "S";
         } else if (containsMarker(BoardMarker.EXIT_ZONE)) {
-            stringBuilder.append("| E ");
+            return "E";
         } else {
-            stringBuilder.append("|   ");
+            return " ";
         }
-        return stringBuilder.toString();
     }
 }

@@ -22,7 +22,9 @@ public class Move implements Action {
 
     @Override
     public boolean isPossible(Survivor survivor) {
-        return !survivor.getZone().getConnectedZones().isEmpty();
+        return !survivor.getZone()
+                .getConnectedZones()
+                .isEmpty();
     }
 
     @Override

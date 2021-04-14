@@ -1,8 +1,12 @@
 package com.fouan.character;
 
 import com.fouan.board.Zone;
+import com.fouan.game.Direction;
 import com.fouan.io.Output;
 import com.fouan.weapon.Weapon;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 public class Survivor {
     public static final int LIFE_POINTS = 3;
@@ -24,8 +28,8 @@ public class Survivor {
         zone.addSurvivor(this);
     }
 
-    public boolean attacks() {
-        return weapon.hit();
+    public long attacks() {
+        return weapon.use();
     }
 
     public Zone getZone() {
@@ -33,15 +37,28 @@ public class Survivor {
     }
 
     public boolean canFight() {
-        return zone.containsZombie();
+        return isMeleeActionPossible() || isRangedActionPossible();
+    }
+
+    private boolean isMeleeActionPossible() {
+        return zone.containsZombie() && weapon.getRange() == 0;
+    }
+
+    private boolean isRangedActionPossible() {
+        return Arrays.stream(Direction.values())
+                .map(direction -> zone.getAllInDirection(direction))
+                .flatMap(Collection::stream)
+                .filter(Zone::containsZombie)
+                .map(zoneInSightWithZombie -> zoneInSightWithZombie.getPosition().computeDistance(zone.getPosition()))
+                .anyMatch(distance -> distance <= weapon.getRange());
     }
 
     public boolean isAlive() {
         return wounds < LIFE_POINTS;
     }
 
-    public void suffersInjury() {
-        wounds += 1;
+    public void suffersInjury(int damageInflicted) {
+        wounds += damageInflicted;
     }
 
     public void displayWounds() {

@@ -32,6 +32,10 @@ public class Position {
         return plusY(-value);
     }
 
+    public int computeDistance(Position other) {
+        return Math.max(Math.abs(x - other.x), Math.abs(y - other.y));
+    }
+
     @Override
     public String toString() {
         return "Position{" +
