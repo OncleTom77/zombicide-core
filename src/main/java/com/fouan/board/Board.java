@@ -3,6 +3,7 @@ package com.fouan.board;
 import com.fouan.character.Survivor;
 import com.fouan.character.Zombie;
 import com.fouan.game.Direction;
+import com.fouan.game.GameResult;
 import com.fouan.io.Output;
 import com.fouan.weapon.Axe;
 import com.fouan.weapon.DiceRoller;
@@ -95,6 +96,15 @@ public class Board {
     }
 
     public void displayBoard() {
+        displayZones();
+        displaySurvivorWounds();
+    }
+
+    private void displaySurvivorWounds() {
+        survivor.displayWounds();
+    }
+
+    private void displayZones() {
         StringBuilder horizontalLine = new StringBuilder();
         for (int i = 0; i < width; i++) {
             horizontalLine.append("----");
@@ -119,7 +129,16 @@ public class Board {
         }
     }
 
-    public boolean hasSurvivorAlive() {
-        return survivor.isAlive();
+    public boolean allSurvivorsDead() {
+        return survivor.isDead();
+    }
+
+    public GameResult computeGameResult() {
+        if (isObjectiveComplete()) {
+            return GameResult.SURVIVORS_VICTORY;
+        } else if (allSurvivorsDead()) {
+            return GameResult.SURVIVORS_DEFEAT;
+        }
+        return GameResult.UNDEFINED;
     }
 }

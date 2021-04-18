@@ -14,12 +14,14 @@ public class Survivor {
     private Zone zone;
     private Weapon weapon;
     private int wounds;
+    private int actionsPerTurn;
 
     public Survivor(Zone initialZone, Weapon weapon, Output output) {
         this.zone = initialZone;
         this.weapon = weapon;
         this.output = output;
         wounds = 0;
+        actionsPerTurn = 3;
     }
 
     public void changesZone(Zone zone) {
@@ -34,6 +36,10 @@ public class Survivor {
 
     public Zone getZone() {
         return zone;
+    }
+
+    public int getActionsPerTurn() {
+        return actionsPerTurn;
     }
 
     public boolean canFight() {
@@ -53,8 +59,8 @@ public class Survivor {
                 .anyMatch(distance -> distance <= weapon.getRange());
     }
 
-    public boolean isAlive() {
-        return wounds < LIFE_POINTS;
+    public boolean isDead() {
+        return wounds >= LIFE_POINTS;
     }
 
     public void suffersInjury(int damageInflicted) {

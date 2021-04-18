@@ -1,6 +1,7 @@
 package com.fouan.game;
 
 import com.fouan.board.Board;
+import com.fouan.character.Survivor;
 import com.fouan.io.Output;
 
 import javax.inject.Named;
@@ -17,34 +18,40 @@ public class LoopGame {
     }
 
     public void run(Board board) {
+        GameResult gameResult = GameResult.UNDEFINED;
         do {
-            board.displayBoard();
             output.display("New turn");
-            board.getSurvivor()
-                    .displayWounds();
 
             // survivors' phase
-            actionDecision.next(board.getSurvivor())
-                    .execute(board.getSurvivor(), board);
+            Survivor survivor = board.getSurvivor();
+            for (int i = 0; i < survivor.getActionsPerTurn() && gameResult == GameResult.UNDEFINED; i++) {
+                board.displayBoard();
+                output.display("Action N°" + (i + 1));
+                actionDecision.next(survivor)
+                        .execute(survivor, board);
 
-            // check potential survivors victory
-            if (board.isObjectiveComplete()) {
-                output.display("You won!");
+                // check potential survivors victory
+                gameResult = board.computeGameResult();
+            }
+
+            if (gameResult != GameResult.UNDEFINED) {
                 break;
             }
 
             // zombies' phase
             board.playZombiePhase();
             // check potential survivors defeat
-            if (!board.hasSurvivorAlive()) {
-                output.display("You lose!");
-                break;
-            }
+            gameResult = board.computeGameResult();
 
             // zombies invasion
             // check potential survivors defeat
-        } while (true);
+        } while (gameResult == GameResult.UNDEFINED);
 
+        if (gameResult == GameResult.SURVIVORS_VICTORY) {
+            output.display("You won!");
+        } else if (gameResult == GameResult.SURVIVORS_DEFEAT) {
+            output.display("You lose!");
+        }
         output.display("End of the game.");
     }
 }
