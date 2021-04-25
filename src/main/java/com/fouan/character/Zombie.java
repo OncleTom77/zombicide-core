@@ -6,24 +6,16 @@ import com.fouan.io.Output;
 import java.util.List;
 import java.util.Random;
 
-public class Zombie {
+public class Zombie extends Character {
     private final int damageInflicted = 1;
 
-    private Zone zone;
     private final Random random;
-    private final Output output;
 
     public Zombie(Zone initialZone, Random random, Output output) {
+        super(output);
         this.random = random;
-        this.output = output;
         this.zone = initialZone;
-        initialZone.addZombie(this);
-    }
-
-    private void changesZone(Zone zone) {
-        this.zone.removeZombie(this);
-        this.zone = zone;
-        zone.addZombie(this);
+        initialZone.addCharacter(this);
     }
 
     public void fights() {

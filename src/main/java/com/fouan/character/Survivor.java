@@ -8,34 +8,22 @@ import com.fouan.weapon.Weapon;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class Survivor {
+public class Survivor extends Character {
     public static final int LIFE_POINTS = 3;
-    private final Output output;
-    private Zone zone;
     private Weapon weapon;
     private int wounds;
     private int actionsPerTurn;
 
     public Survivor(Zone initialZone, Weapon weapon, Output output) {
+        super(output);
         this.zone = initialZone;
         this.weapon = weapon;
-        this.output = output;
         wounds = 0;
         actionsPerTurn = 3;
     }
 
-    public void changesZone(Zone zone) {
-        this.zone.removeSurvivor(this);
-        this.zone = zone;
-        zone.addSurvivor(this);
-    }
-
     public long attacks() {
         return weapon.use();
-    }
-
-    public Zone getZone() {
-        return zone;
     }
 
     public int getActionsPerTurn() {

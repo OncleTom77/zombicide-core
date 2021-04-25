@@ -10,8 +10,6 @@ import com.fouan.weapon.DiceRoller;
 
 import java.util.*;
 
-import static java.util.Arrays.asList;
-
 public class Board {
 
     private final Output output;
@@ -39,7 +37,8 @@ public class Board {
         getZone(width - 1, height - 1).orElseThrow(IllegalArgumentException::new)
                 .addMarker(BoardMarker.EXIT_ZONE);
         survivor = new Survivor(survivorStartingZone, new Axe(diceRoller, output), output);
-        zombies = new ArrayList<>(Collections.singletonList(initZombie(random, zones, output)));
+        zombies = new ArrayList<>();
+        zombies.add(initZombie(random, zones, output));
     }
 
     private Zombie initZombie(Random random, List<Zone> zones, Output output) {
@@ -92,7 +91,7 @@ public class Board {
     }
 
     public void removeZombie(Zombie zombie) {
-        zones.forEach(zone -> zone.removeZombie(zombie));
+        zones.forEach(zone -> zone.removeCharacter(zombie));
         zombies.remove(zombie);
     }
 
@@ -144,6 +143,5 @@ public class Board {
     }
 
     public void spawnZombies() {
-
     }
 }

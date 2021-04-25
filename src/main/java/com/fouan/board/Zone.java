@@ -1,24 +1,24 @@
 package com.fouan.board;
 
+import com.fouan.character.Character;
 import com.fouan.character.Survivor;
 import com.fouan.character.Zombie;
 import com.fouan.game.Direction;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Zone {
 
     private final Position position;
     private final Map<Direction, Zone> connectedZones;
-    private final List<Zombie> zombies;
-    private final List<Survivor> survivors;
+    private final List<Character> characters;
     private final List<BoardMarker> markers;
 
     public Zone(Position position) {
         this.position = position;
         connectedZones = new HashMap<>(4);
-        zombies = new ArrayList<>();
-        survivors = new ArrayList<>();
+        characters = new ArrayList<>();
         markers = new ArrayList<>();
     }
 
@@ -30,32 +30,37 @@ public class Zone {
         connectedZones.put(direction, zone);
     }
 
-    public void addZombie(Zombie zombie) {
-        zombies.add(zombie);
+    public void addCharacter(Character character) {
+        characters.add(character);
     }
 
-    public void removeZombie(Zombie zombie) {
-        zombies.remove(zombie);
+    public void removeCharacter(Character character) {
+        characters.remove(character);
     }
 
     public boolean containsZombie() {
-        return !zombies.isEmpty();
+        return characters.stream()
+                .anyMatch(character -> character instanceof Zombie);
     }
 
     public List<Zombie> getZombies() {
-        return zombies;
-    }
-
-    public void addSurvivor(Survivor survivor) {
-        survivors.add(survivor);
-    }
-
-    public void removeSurvivor(Survivor survivor) {
-        survivors.remove(survivor);
+        return characters.stream()
+                .filter(character -> character instanceof Zombie)
+                .map(character -> (Zombie) character)
+                .collect(Collectors.toList());
     }
 
     public boolean containsSurvivor() {
-        return !survivors.isEmpty();
+        return characters.stream()
+                .anyMatch(character -> character instanceof Survivor);
+    }
+
+    public Survivor getSurvivor() {
+        return characters.stream()
+                .filter(character -> character instanceof Survivor)
+                .map(character -> (Survivor) character)
+                .findFirst()
+                .orElse(null);
     }
 
     public void addMarker(BoardMarker marker) {
@@ -68,12 +73,6 @@ public class Zone {
 
     public boolean containsMarker(BoardMarker marker) {
         return markers.contains(marker);
-    }
-
-    public Survivor getSurvivor() {
-        return survivors.stream()
-                .findFirst()
-                .orElse(null);
     }
 
     public Position getPosition() {
