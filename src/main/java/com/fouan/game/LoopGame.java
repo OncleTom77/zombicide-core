@@ -1,7 +1,7 @@
 package com.fouan.game;
 
 import com.fouan.board.Board;
-import com.fouan.character.Survivor;
+import com.fouan.actor.Survivor;
 import com.fouan.io.Output;
 
 import javax.inject.Named;
@@ -29,11 +29,12 @@ public class LoopGame {
             }
 
             // zombies' phase
-            board.playZombiePhase();
+            board.playZombiesPhase();
             // check potential survivors defeat
             gameResult = board.computeGameResult();
 
             // zombies invasion
+            board.spawnZombies();
             // check potential survivors defeat
         } while (gameResult == GameResult.UNDEFINED);
 

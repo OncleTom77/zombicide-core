@@ -1,24 +1,24 @@
 package com.fouan.board;
 
-import com.fouan.character.Survivor;
-import com.fouan.character.Zombie;
+import com.fouan.actor.Actor;
+import com.fouan.actor.Survivor;
+import com.fouan.actor.Zombie;
 import com.fouan.game.Direction;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Zone {
 
     private final Position position;
     private final Map<Direction, Zone> connectedZones;
-    private final List<Zombie> zombies;
-    private final List<Survivor> survivors;
+    private final List<Actor> actors;
     private final List<BoardMarker> markers;
 
     public Zone(Position position) {
         this.position = position;
         connectedZones = new HashMap<>(4);
-        zombies = new ArrayList<>();
-        survivors = new ArrayList<>();
+        actors = new ArrayList<>();
         markers = new ArrayList<>();
     }
 
@@ -30,28 +30,37 @@ public class Zone {
         connectedZones.put(direction, zone);
     }
 
-    public void addZombie(Zombie zombie) {
-        zombies.add(zombie);
+    public void addActor(Actor actor) {
+        actors.add(actor);
     }
 
-    public void removeZombie(Zombie zombie) {
-        zombies.remove(zombie);
+    public void removeActors(List<? extends Actor> actorsToRemove) {
+        actors.removeAll(actorsToRemove);
     }
 
     public boolean containsZombie() {
-        return !zombies.isEmpty();
+        return actors.stream()
+                .anyMatch(actor -> actor instanceof Zombie);
     }
 
-    public void removeSurvivor(Survivor survivor) {
-        survivors.remove(survivor);
-    }
-
-    public void addSurvivor(Survivor survivor) {
-        survivors.add(survivor);
+    public List<Zombie> getZombies() {
+        return actors.stream()
+                .filter(actor -> actor instanceof Zombie)
+                .map(actor -> (Zombie) actor)
+                .collect(Collectors.toList());
     }
 
     public boolean containsSurvivor() {
-        return !survivors.isEmpty();
+        return actors.stream()
+                .anyMatch(actor -> actor instanceof Survivor);
+    }
+
+    public Survivor getSurvivor() {
+        return actors.stream()
+                .filter(actor -> actor instanceof Survivor)
+                .map(actor -> (Survivor) actor)
+                .findFirst()
+                .orElse(null);
     }
 
     public void addMarker(BoardMarker marker) {
@@ -64,12 +73,6 @@ public class Zone {
 
     public boolean containsMarker(BoardMarker marker) {
         return markers.contains(marker);
-    }
-
-    public Survivor getSurvivor() {
-        return survivors.stream()
-                .findFirst()
-                .orElse(null);
     }
 
     public Position getPosition() {
@@ -103,15 +106,17 @@ public class Zone {
 
     String getStringRepresentation() {
         if (containsSurvivor()) {
-            return "O";
+            return "Su";
         } else if (containsZombie()) {
-            return "Z";
+            return "Zo";
         } else if (containsMarker(BoardMarker.STARTING_ZONE)) {
-            return "S";
+            return "St";
         } else if (containsMarker(BoardMarker.EXIT_ZONE)) {
-            return "E";
+            return "Ex";
+        } else if (containsMarker(BoardMarker.ZOMBIE_SPAWN)) {
+            return "Sp";
         } else {
-            return " ";
+            return "  ";
         }
     }
 }

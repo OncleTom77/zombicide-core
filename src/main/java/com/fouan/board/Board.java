@@ -1,7 +1,7 @@
 package com.fouan.board;
 
-import com.fouan.character.Survivor;
-import com.fouan.character.Zombie;
+import com.fouan.actor.Survivor;
+import com.fouan.actor.Zombie;
 import com.fouan.game.Direction;
 import com.fouan.game.GameResult;
 import com.fouan.io.Output;
@@ -9,22 +9,21 @@ import com.fouan.weapon.Axe;
 import com.fouan.weapon.DiceRoller;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Board {
 
     private final Output output;
-    private final Random random;
     private final DiceRoller diceRoller;
+    private final ZombieSpawner zombieSpawner;
     private List<Zone> zones;
-    private Survivor survivor;
-    private Zombie zombie;
     private int width;
     private int height;
 
-    public Board(Output output, Random random, DiceRoller diceRoller) {
+    public Board(Output output, DiceRoller diceRoller, ZombieSpawner zombieSpawner) {
         this.output = output;
-        this.random = random;
         this.diceRoller = diceRoller;
+        this.zombieSpawner = zombieSpawner;
     }
 
     public void init() {
@@ -32,18 +31,20 @@ public class Board {
         height = 6;
 
         zones = initZones(width, height);
-        Zone survivorStartingZone = getZone(0, 0).orElseThrow(IllegalArgumentException::new);
-        survivorStartingZone.addMarker(BoardMarker.STARTING_ZONE);
-        getZone(width - 1, height - 1).orElseThrow(IllegalArgumentException::new)
-                .addMarker(BoardMarker.EXIT_ZONE);
-        survivor = new Survivor(survivorStartingZone, new Axe(diceRoller, output), output);
-        zombie = initZombie(random, zones, output);
+        getZone(0, 0).orElseThrow().addMarker(BoardMarker.STARTING_ZONE);
+        getZone(width - 1, height - 1).orElseThrow().addMarker(BoardMarker.EXIT_ZONE);
+        getZone(width - 1, 0).orElseThrow().addMarker(BoardMarker.ZOMBIE_SPAWN);
+
+        initSurvivor();
+        spawnZombies();
     }
 
-    private Zombie initZombie(Random random, List<Zone> zones, Output output) {
-        int randomZoneIndex = random.nextInt(zones.size());
-        Zone zombieStartingZone = zones.get(randomZoneIndex);
-        return new Zombie(zombieStartingZone, random, output);
+    private void initSurvivor() {
+        Zone startingZone = zones.stream()
+                .filter(zone -> zone.containsMarker(BoardMarker.STARTING_ZONE))
+                .findFirst()
+                .orElseThrow();
+        new Survivor(startingZone, new Axe(diceRoller, output), output);
     }
 
     private Optional<Zone> getZone(int x, int y) {
@@ -76,23 +77,39 @@ public class Board {
                         .ifPresent(neighborZone -> zone.addConnection(direction, neighborZone))));
     }
 
-    public boolean isObjectiveComplete() {
-        return survivor.getZone().containsMarker(BoardMarker.EXIT_ZONE);
+    private List<Zone> findZones(BoardMarker marker) {
+        return zones.stream()
+                .filter(zone -> zone.containsMarker(marker))
+                .collect(Collectors.toList());
     }
 
     public Survivor getSurvivor() {
-        return survivor;
+        return zones.stream()
+                .map(Zone::getSurvivor)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow();
     }
 
-    public void playZombiePhase() {
-        if (zombie != null) {
-            zombie.plays();
-        }
+    private List<Zombie> getZombies() {
+        return zones.stream()
+                .map(Zone::getZombies)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
-    public void removeZombie() {
-        zones.forEach(zone -> zone.removeZombie(zombie));
-        zombie = null;
+    /**
+     * First, play zombies that can attack
+     * Then, play zombies that must move
+     */
+    public void playZombiesPhase() {
+        List<Zombie> zombies = getZombies();
+        zombies.stream()
+                .filter(Zombie::canFight)
+                .forEach(Zombie::fights);
+        zombies.stream()
+                .filter(zombie -> !zombie.canFight())
+                .forEach(Zombie::moves);
     }
 
     public void displayBoard() {
@@ -101,13 +118,13 @@ public class Board {
     }
 
     private void displaySurvivorWounds() {
-        survivor.displayWounds();
+        getSurvivor().displayWounds();
     }
 
     private void displayZones() {
         StringBuilder horizontalLine = new StringBuilder();
         for (int i = 0; i < width; i++) {
-            horizontalLine.append("----");
+            horizontalLine.append("-----");
         }
         horizontalLine.append("-");
 
@@ -129,8 +146,16 @@ public class Board {
         }
     }
 
+    public boolean isObjectiveComplete() {
+        return findZones(BoardMarker.EXIT_ZONE)
+                .stream()
+                .findFirst()
+                .orElseThrow()
+                .containsSurvivor();
+    }
+
     public boolean allSurvivorsDead() {
-        return survivor.isDead();
+        return getSurvivor().isDead();
     }
 
     public GameResult computeGameResult() {
@@ -140,5 +165,11 @@ public class Board {
             return GameResult.SURVIVORS_DEFEAT;
         }
         return GameResult.UNDEFINED;
+    }
+
+    public void spawnZombies() {
+        DangerLevel dangerLevel = getSurvivor().getDangerLevel();
+        findZones(BoardMarker.ZOMBIE_SPAWN)
+                .forEach(zone -> zombieSpawner.spawnZombies(dangerLevel, zone));
     }
 }

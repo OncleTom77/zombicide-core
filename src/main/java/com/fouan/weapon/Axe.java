@@ -20,15 +20,17 @@ public class Axe extends Weapon {
     }
 
     @Override
-    public long use() {
+    public AttackResult use() {
         List<Integer> rolls = IntStream.range(0, dice)
                 .map(value -> diceRoller.roll())
                 .boxed()
                 .collect(toList());
         output.display("Dice: " + rolls);
 
-        return rolls.stream()
+        long hitCount = rolls.stream()
                 .filter(roll -> roll >= accuracy)
                 .count();
+
+        return new AttackResult(this, (int) hitCount);
     }
 }

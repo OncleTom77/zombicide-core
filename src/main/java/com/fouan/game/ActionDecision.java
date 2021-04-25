@@ -1,7 +1,7 @@
 package com.fouan.game;
 
 import com.fouan.action.Action;
-import com.fouan.character.Survivor;
+import com.fouan.actor.Survivor;
 import com.fouan.io.ChoiceMaker;
 import com.fouan.io.Output;
 

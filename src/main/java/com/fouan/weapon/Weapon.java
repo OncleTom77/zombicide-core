@@ -5,7 +5,7 @@ public abstract class Weapon {
 //    private final boolean noisy = false;
 //    private final boolean canOpenDoor = true;
 //    private final boolean noisyOpeningDoor = true;
-//    private final int damage = 1;
+    private final int damage = 1;
     protected final int range;
     protected final int dice;
     protected final int accuracy;
@@ -16,9 +16,13 @@ public abstract class Weapon {
         this.accuracy = accuracy;
     }
 
-    public abstract long use();
+    public abstract AttackResult use();
 
     public int getRange() {
         return range;
+    }
+
+    public int getDamage() {
+        return damage;
     }
 }

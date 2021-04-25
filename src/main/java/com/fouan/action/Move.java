@@ -4,7 +4,7 @@ import com.fouan.board.Board;
 import com.fouan.io.ChoiceMaker;
 import com.fouan.io.Output;
 import com.fouan.board.Zone;
-import com.fouan.character.Survivor;
+import com.fouan.actor.Survivor;
 
 import javax.inject.Named;
 import java.util.List;

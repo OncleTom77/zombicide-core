@@ -1,7 +1,7 @@
 package com.fouan.action;
 
 import com.fouan.board.Board;
-import com.fouan.character.Survivor;
+import com.fouan.actor.Survivor;
 
 public interface Action {
 

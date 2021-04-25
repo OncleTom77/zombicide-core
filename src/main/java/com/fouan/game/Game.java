@@ -1,11 +1,11 @@
 package com.fouan.game;
 
 import com.fouan.board.Board;
+import com.fouan.board.ZombieSpawner;
 import com.fouan.io.Output;
 import com.fouan.weapon.DiceRoller;
 
 import javax.inject.Named;
-import java.util.Random;
 
 @Named
 public class Game {
@@ -13,9 +13,9 @@ public class Game {
     private final LoopGame loopGame;
     private final Board board;
 
-    public Game(LoopGame loopGame, Output output, Random random, DiceRoller diceRoller) {
+    public Game(LoopGame loopGame, Output output, DiceRoller diceRoller, ZombieSpawner zombieSpawner) {
         this.loopGame = loopGame;
-        this.board = new Board(output, random, diceRoller);
+        this.board = new Board(output, diceRoller, zombieSpawner);
     }
 
     public void start() {
