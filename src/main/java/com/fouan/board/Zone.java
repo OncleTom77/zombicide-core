@@ -42,12 +42,16 @@ public class Zone {
         return !zombies.isEmpty();
     }
 
-    public void removeSurvivor(Survivor survivor) {
-        survivors.remove(survivor);
+    public List<Zombie> getZombies() {
+        return zombies;
     }
 
     public void addSurvivor(Survivor survivor) {
         survivors.add(survivor);
+    }
+
+    public void removeSurvivor(Survivor survivor) {
+        survivors.remove(survivor);
     }
 
     public boolean containsSurvivor() {

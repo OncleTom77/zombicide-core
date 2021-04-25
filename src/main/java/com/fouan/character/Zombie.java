@@ -26,21 +26,13 @@ public class Zombie {
         zone.addZombie(this);
     }
 
-    public void plays() {
-        if (canFight()) {
-            fights();
-        } else {
-            moves();
-        }
-    }
-
-    private void fights() {
+    public void fights() {
         output.display("Zombie attacks the survivor!");
         zone.getSurvivor()
                 .suffersInjury(damageInflicted);
     }
 
-    private boolean canFight() {
+    public boolean canFight() {
         return zone.containsSurvivor();
     }
 

@@ -2,9 +2,11 @@ package com.fouan.action;
 
 import com.fouan.board.Board;
 import com.fouan.character.Survivor;
+import com.fouan.character.Zombie;
 import com.fouan.io.Output;
 
 import javax.inject.Named;
+import java.util.List;
 
 @Named
 public class Combat implements Action {
@@ -24,8 +26,16 @@ public class Combat implements Action {
     public void execute(Survivor survivor, Board board) {
         output.display("Combat!!!");
         if (survivor.attacks() > 0) {
+            List<Zombie> zombies = survivor.getZone()
+                    .getZombies();
+            //TODO: when there is more than one zombie, asks survivor which zombie to kill
+            Zombie zombie = zombies
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(IllegalArgumentException::new);
+
             output.display("Zombie is dead");
-            board.removeZombie();
+            board.removeZombie(zombie);
         }
     }
 

@@ -10,6 +10,8 @@ import com.fouan.weapon.DiceRoller;
 
 import java.util.*;
 
+import static java.util.Arrays.asList;
+
 public class Board {
 
     private final Output output;
@@ -17,7 +19,7 @@ public class Board {
     private final DiceRoller diceRoller;
     private List<Zone> zones;
     private Survivor survivor;
-    private Zombie zombie;
+    private List<Zombie> zombies;
     private int width;
     private int height;
 
@@ -37,7 +39,7 @@ public class Board {
         getZone(width - 1, height - 1).orElseThrow(IllegalArgumentException::new)
                 .addMarker(BoardMarker.EXIT_ZONE);
         survivor = new Survivor(survivorStartingZone, new Axe(diceRoller, output), output);
-        zombie = initZombie(random, zones, output);
+        zombies = new ArrayList<>(Collections.singletonList(initZombie(random, zones, output)));
     }
 
     private Zombie initZombie(Random random, List<Zone> zones, Output output) {
@@ -84,15 +86,14 @@ public class Board {
         return survivor;
     }
 
-    public void playZombiePhase() {
-        if (zombie != null) {
-            zombie.plays();
-        }
+    public void playZombiesPhase() {
+        zombies.stream().filter(Zombie::canFight).forEach(Zombie::fights);
+        zombies.stream().filter(zombie -> !zombie.canFight()).forEach(Zombie::moves);
     }
 
-    public void removeZombie() {
+    public void removeZombie(Zombie zombie) {
         zones.forEach(zone -> zone.removeZombie(zombie));
-        zombie = null;
+        zombies.remove(zombie);
     }
 
     public void displayBoard() {
@@ -140,5 +141,9 @@ public class Board {
             return GameResult.SURVIVORS_DEFEAT;
         }
         return GameResult.UNDEFINED;
+    }
+
+    public void spawnZombies() {
+
     }
 }

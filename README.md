@@ -43,7 +43,14 @@ Zombicide core is a project that implements the main mechanisms of the board gam
 
 ### 6. Zombie invasion phase
 
+First:
+- adapt game to have multiple Zombies
 - ask survivor which zombie to hit when there is more than one zombie is his Zone
+- play all Zombies when playing Zombies' phase
+- resolve Zombie attacks before Zombie moves
+
+Then
+- generate Zombies for each Zombie Spawn on the map
 
 ### 7. Zombies move to the survivor (no more random)
 
