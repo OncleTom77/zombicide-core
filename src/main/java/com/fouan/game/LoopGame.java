@@ -23,17 +23,7 @@ public class LoopGame {
             output.display("New turn");
 
             // survivors' phase
-            Survivor survivor = board.getSurvivor();
-            for (int i = 0; i < survivor.getActionsPerTurn() && gameResult == GameResult.UNDEFINED; i++) {
-                board.displayBoard();
-                output.display("Action N°" + (i + 1));
-                actionDecision.next(survivor)
-                        .execute(survivor, board);
-
-                // check potential survivors victory
-                gameResult = board.computeGameResult();
-            }
-
+            gameResult = survivorsPhase(board, gameResult);
             if (gameResult != GameResult.UNDEFINED) {
                 break;
             }
@@ -53,5 +43,19 @@ public class LoopGame {
             output.display("You lose!");
         }
         output.display("End of the game.");
+    }
+
+    private GameResult survivorsPhase(Board board, GameResult gameResult) {
+        Survivor survivor = board.getSurvivor();
+        for (int i = 0; i < survivor.getActionsPerTurn() && gameResult == GameResult.UNDEFINED; i++) {
+            board.displayBoard();
+            output.display("Action N°" + (i + 1));
+            actionDecision.next(survivor)
+                    .execute(survivor, board);
+
+            // check potential survivors victory
+            gameResult = board.computeGameResult();
+        }
+        return gameResult;
     }
 }
