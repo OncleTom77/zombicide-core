@@ -55,12 +55,11 @@ public class Zone {
                 .anyMatch(actor -> actor instanceof Survivor);
     }
 
-    public Survivor getSurvivor() {
+    public List<Survivor> getSurvivors() {
         return actors.stream()
                 .filter(actor -> actor instanceof Survivor)
                 .map(actor -> (Survivor) actor)
-                .findFirst()
-                .orElse(null);
+                .collect(Collectors.toList());
     }
 
     public void addMarker(BoardMarker marker) {

@@ -2,6 +2,7 @@ package com.fouan.actor;
 
 import com.fouan.board.DangerLevel;
 import com.fouan.board.Zone;
+import com.fouan.game.ActorSelection;
 import com.fouan.game.Direction;
 import com.fouan.io.Output;
 import com.fouan.weapon.AttackResult;
@@ -10,15 +11,19 @@ import com.fouan.weapon.Weapon;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static java.util.Collections.singletonList;
+
 public class Survivor extends Actor {
     public static final int LIFE_POINTS = 3;
+    private final String name;
     private Weapon weapon;
     private int wounds;
     private int experience;
     private int actionsPerTurn;
 
-    public Survivor(Zone initialZone, Weapon weapon, Output output) {
-        super(output, initialZone);
+    Survivor(Output output, ActorSelection actorSelection, Zone initialZone, String name, Weapon weapon) {
+        super(output, actorSelection, initialZone);
+        this.name = name;
         this.weapon = weapon;
         wounds = 0;
         experience = 0;
@@ -60,10 +65,9 @@ public class Survivor extends Actor {
 
     public void suffersInjury(int damageInflicted) {
         wounds += damageInflicted;
-    }
-
-    public void displayWounds() {
-        this.output.display("Wounds counter: " + wounds);
+        if (isDead()) {
+            zone.removeActors(singletonList(this));
+        }
     }
 
     public DangerLevel getDangerLevel() {
@@ -72,5 +76,10 @@ public class Survivor extends Actor {
 
     public Weapon getWeapon() {
         return weapon;
+    }
+
+    @Override
+    public String toString() {
+        return "Survivor " + name + " (wounds: " + wounds + ")";
     }
 }

@@ -1,6 +1,7 @@
 package com.fouan.actor;
 
 import com.fouan.board.Zone;
+import com.fouan.game.ActorSelection;
 import com.fouan.io.Output;
 import com.fouan.weapon.Weapon;
 
@@ -12,16 +13,10 @@ public class Zombie extends Actor {
     private final Random random;
     private final ZombieType type;
 
-    public Zombie(Random random, Output output, ZombieType type, Zone initialZone) {
-        super(output, initialZone);
+    public Zombie(Random random, Output output, ActorSelection actorSelection, Zone initialZone, ZombieType type) {
+        super(output, actorSelection, initialZone);
         this.random = random;
         this.type = type;
-    }
-
-    public void fights() {
-        output.display("Zombie attacks the survivor!");
-        zone.getSurvivor()
-                .suffersInjury(type.getDamage());
     }
 
     public boolean canFight() {
@@ -38,5 +33,9 @@ public class Zombie extends Actor {
 
     public boolean canBeKilledByWeapon(Weapon weapon) {
         return weapon.getDamage() >= type.getMinDamageToDestroy();
+    }
+
+    public ZombieType getType() {
+        return type;
     }
 }

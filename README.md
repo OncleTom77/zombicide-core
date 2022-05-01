@@ -52,14 +52,27 @@ First:
 Then
 - generate Zombies for each Zombie Spawn on the map
 
-### 7. Zombies move to the survivor (no more random)
+### 7. Multiple survivors
 
-### 8. Introduce buildings (without closed doors for now)
+- make all survivors play
+- compute the end of the game according to all the survivors
+- when a zombie attacks a zone where there are multiple survivors, ask players which survivor gets injured
+- when there are multiple zombies in the same zone, make them attack together against the same survivor
+
+### 7.5 Bonus
+
+- refactor game to handle interactions with event-based system
+  - have a centralized event collector
+  - when zombie needs an input from user, send an input request event, wait for the response and continue
+
+### 8. Zombies move to the survivors (no more random)
+
+### 9. Introduce buildings (without closed doors for now)
 
 - wall
 - new Search Action for survivors
 
-### 9. Add doors to buildings
+### 10. Add doors to buildings
 
 - new action to open doors
 - when the first building door is open, generate Zombies in each building's Zones
@@ -68,11 +81,10 @@ Then
 
 - new Zombie types: Fatty, Runner, Abomination
 - new weapons types: ranged, magic, enchantments
-- new Actions: make noise, do nothing, reorganize inventor
+- new Actions: make noise, reorganize inventor
 - introduction of scenario with new objectives: retrieve specific items on the board, etc.
 - new Zombie Invasion card (additional Zombie Activation)
 - line of sight
 - Survivor skills, experience, danger level (modify zombie spawn phase)
 - multiple weapons, body equipments
-- multiple survivors
 - import map from file

@@ -1,20 +1,20 @@
 package com.fouan.board;
 
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
-@Builder
 @EqualsAndHashCode
 public class Position {
 
     private final int x;
     private final int y;
 
+    public Position(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public Position plusX(int value) {
-        return Position.builder()
-                .x(x + value)
-                .y(y)
-                .build();
+        return new Position(x + value, y);
     }
 
     public Position minusX(int value) {
@@ -22,10 +22,7 @@ public class Position {
     }
 
     public Position plusY(int value) {
-        return Position.builder()
-                .x(x)
-                .y(y + value)
-                .build();
+        return new Position(x, y + value);
     }
 
     public Position minusY(int value) {

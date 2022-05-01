@@ -5,6 +5,7 @@ import com.fouan.actor.Survivor;
 import com.fouan.io.Output;
 
 import javax.inject.Named;
+import java.util.List;
 
 @Named
 public class LoopGame {
@@ -18,12 +19,12 @@ public class LoopGame {
     }
 
     public void run(Board board) {
-        GameResult gameResult = GameResult.UNDEFINED;
+        GameResult gameResult;
         do {
             output.display("New turn");
 
             // survivors' phase
-            gameResult = survivorsPhase(board, gameResult);
+            gameResult = survivorsPhase(board);
             if (gameResult != GameResult.UNDEFINED) {
                 break;
             }
@@ -32,31 +33,39 @@ public class LoopGame {
             board.playZombiesPhase();
             // check potential survivors defeat
             gameResult = board.computeGameResult();
+            if (gameResult != GameResult.UNDEFINED) {
+                break;
+            }
 
             // zombies invasion
             board.spawnZombies();
             // check potential survivors defeat
         } while (gameResult == GameResult.UNDEFINED);
 
-        if (gameResult == GameResult.SURVIVORS_VICTORY) {
-            output.display("You won!");
-        } else if (gameResult == GameResult.SURVIVORS_DEFEAT) {
-            output.display("You lose!");
+        switch (gameResult) {
+            case SURVIVORS_VICTORY -> output.display("You won!");
+            case SURVIVORS_DEFEAT -> output.display("You lose!");
         }
         output.display("End of the game.");
     }
 
-    private GameResult survivorsPhase(Board board, GameResult gameResult) {
-        Survivor survivor = board.getSurvivor();
-        for (int i = 0; i < survivor.getActionsPerTurn() && gameResult == GameResult.UNDEFINED; i++) {
-            board.displayBoard();
-            output.display("Action N°" + (i + 1));
-            actionDecision.next(survivor)
-                    .execute(survivor, board);
+    private GameResult survivorsPhase(Board board) {
+        List<Survivor> survivors = board.getLivingSurvivors();
+        for (Survivor survivor : survivors) {
+            output.display(survivor.toString());
+            for (int i = 0; i < survivor.getActionsPerTurn(); i++) {
+                board.displayBoard();
+                output.display("Action N°" + (i + 1));
+                actionDecision.next(survivor)
+                        .execute(survivor, board);
 
-            // check potential survivors victory
-            gameResult = board.computeGameResult();
+                // check potential survivors victory
+                GameResult gameResult = board.computeGameResult();
+                if (gameResult != GameResult.UNDEFINED) {
+                    return gameResult;
+                }
+            }
         }
-        return gameResult;
+        return GameResult.UNDEFINED;
     }
 }

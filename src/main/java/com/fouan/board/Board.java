@@ -1,7 +1,9 @@
 package com.fouan.board;
 
+import com.fouan.actor.ActorFactory;
 import com.fouan.actor.Survivor;
 import com.fouan.actor.Zombie;
+import com.fouan.actor.ZombiePhase;
 import com.fouan.game.Direction;
 import com.fouan.game.GameResult;
 import com.fouan.io.Output;
@@ -16,14 +18,19 @@ public class Board {
     private final Output output;
     private final DiceRoller diceRoller;
     private final ZombieSpawner zombieSpawner;
+    private final ActorFactory actorFactory;
+    private final ZombiePhase zombiePhase;
     private List<Zone> zones;
     private int width;
     private int height;
+    private List<Survivor> survivors;
 
-    public Board(Output output, DiceRoller diceRoller, ZombieSpawner zombieSpawner) {
+    public Board(Output output, DiceRoller diceRoller, ZombieSpawner zombieSpawner, ActorFactory actorFactory, ZombiePhase zombiePhase) {
         this.output = output;
         this.diceRoller = diceRoller;
         this.zombieSpawner = zombieSpawner;
+        this.actorFactory = actorFactory;
+        this.zombiePhase = zombiePhase;
     }
 
     public void init() {
@@ -33,25 +40,27 @@ public class Board {
         zones = initZones(width, height);
         getZone(0, 0).orElseThrow().addMarker(BoardMarker.STARTING_ZONE);
         getZone(width - 1, height - 1).orElseThrow().addMarker(BoardMarker.EXIT_ZONE);
-        getZone(width - 1, 0).orElseThrow().addMarker(BoardMarker.ZOMBIE_SPAWN);
+        getZone(1, 0).orElseThrow().addMarker(BoardMarker.ZOMBIE_SPAWN);
 
-        initSurvivor();
+        survivors = initSurvivors();
+        spawnZombies();
         spawnZombies();
     }
 
-    private void initSurvivor() {
+    private List<Survivor> initSurvivors() {
         Zone startingZone = zones.stream()
                 .filter(zone -> zone.containsMarker(BoardMarker.STARTING_ZONE))
                 .findFirst()
                 .orElseThrow();
-        new Survivor(startingZone, new Axe(diceRoller, output), output);
+
+        return List.of(
+                actorFactory.generateAsim(startingZone, new Axe(diceRoller, output)),
+                actorFactory.generateBerin(startingZone, new Axe(diceRoller, output))
+        );
     }
 
     private Optional<Zone> getZone(int x, int y) {
-        return getZone(zones, Position.builder()
-                .x(x)
-                .y(y)
-                .build());
+        return getZone(zones, new Position(x, y));
     }
 
     private Optional<Zone> getZone(List<Zone> zones, Position position) {
@@ -83,19 +92,10 @@ public class Board {
                 .collect(Collectors.toList());
     }
 
-    public Survivor getSurvivor() {
-        return zones.stream()
-                .map(Zone::getSurvivor)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private List<Zombie> getZombies() {
-        return zones.stream()
-                .map(Zone::getZombies)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+    public List<Survivor> getLivingSurvivors() {
+        return survivors.stream()
+                .filter(survivor -> !survivor.isDead())
+                .toList();
     }
 
     /**
@@ -103,22 +103,11 @@ public class Board {
      * Then, play zombies that must move
      */
     public void playZombiesPhase() {
-        List<Zombie> zombies = getZombies();
-        zombies.stream()
-                .filter(Zombie::canFight)
-                .forEach(Zombie::fights);
-        zombies.stream()
-                .filter(zombie -> !zombie.canFight())
-                .forEach(Zombie::moves);
+        zombiePhase.play(zones);
     }
 
     public void displayBoard() {
         displayZones();
-        displaySurvivorWounds();
-    }
-
-    private void displaySurvivorWounds() {
-        getSurvivor().displayWounds();
     }
 
     private void displayZones() {
@@ -147,15 +136,19 @@ public class Board {
     }
 
     public boolean isObjectiveComplete() {
-        return findZones(BoardMarker.EXIT_ZONE)
-                .stream()
+        List<Survivor> livingSurvivors = getLivingSurvivors();
+        if (livingSurvivors.isEmpty()) {
+            return false;
+        }
+
+        Zone exitZone = findZones(BoardMarker.EXIT_ZONE).stream()
                 .findFirst()
-                .orElseThrow()
-                .containsSurvivor();
+                .orElseThrow();
+        return new HashSet<>(exitZone.getSurvivors()).containsAll(livingSurvivors);
     }
 
     public boolean allSurvivorsDead() {
-        return getSurvivor().isDead();
+        return getLivingSurvivors().isEmpty();
     }
 
     public GameResult computeGameResult() {
@@ -168,7 +161,10 @@ public class Board {
     }
 
     public void spawnZombies() {
-        DangerLevel dangerLevel = getSurvivor().getDangerLevel();
+        DangerLevel dangerLevel = getLivingSurvivors().stream()
+                .map(Survivor::getDangerLevel)
+                .max(DangerLevel::compareTo)
+                .orElseThrow();
         findZones(BoardMarker.ZOMBIE_SPAWN)
                 .forEach(zone -> zombieSpawner.spawnZombies(dangerLevel, zone));
     }

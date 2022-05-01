@@ -1,18 +1,20 @@
 package com.fouan.actor;
 
 public enum ZombieType {
-    WALKER(2, 1, 1),
-    FATTY(3, 2, 1),
-    RUNNER(1, 1, 1),
-    ABOMINATION(3, 3, 5),
-    NECROMANCER(2, 1, 1),
+    WALKER("Walker", 2, 1, 1),
+    FATTY("Faty", 3, 2, 1),
+    RUNNER("Runner", 1, 1, 1),
+    ABOMINATION("Abomination", 3, 3, 5),
+    NECROMANCER("Necromancer", 2, 1, 1),
     ;
 
+    private final String name;
     private final int damage;
     private final int minDamageToDestroy;
     private final int experienceProvided;
 
-    ZombieType(int damage, int minDamageToDestroy, int experienceProvided) {
+    ZombieType(String name, int damage, int minDamageToDestroy, int experienceProvided) {
+        this.name = name;
         this.damage = damage;
         this.minDamageToDestroy = minDamageToDestroy;
         this.experienceProvided = experienceProvided;
@@ -24,5 +26,10 @@ public enum ZombieType {
 
     public int getMinDamageToDestroy() {
         return minDamageToDestroy;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
