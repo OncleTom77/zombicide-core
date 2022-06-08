@@ -8,12 +8,10 @@ import java.util.Collections;
 
 public abstract class Actor {
     protected final Output output;
-    protected final ActorSelection actorSelection;
     protected Zone zone;
 
-    protected Actor(Output output, ActorSelection actorSelection, Zone initialZone) {
+    protected Actor(Output output, Zone initialZone) {
         this.output = output;
-        this.actorSelection = actorSelection;
         this.zone = initialZone;
         initialZone.addActor(this);
     }

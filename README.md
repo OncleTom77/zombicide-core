@@ -61,6 +61,8 @@ Then
 
 ### 7.5 Bonus
 
+- implements design pattern
+  - command pattern
 - refactor game to handle interactions with event-based system
   - have a centralized event collector
   - when zombie needs an input from user, send an input request event, wait for the response and continue

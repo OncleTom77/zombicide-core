@@ -22,14 +22,14 @@ public class ActorFactory {
     }
 
     public Zombie generateZombie(Zone initialZone, ZombieType type) {
-        return new Zombie(random, output, actorSelection, initialZone, type);
+        return new Zombie(random, output, initialZone, type);
     }
 
     public Survivor generateAsim(Zone initialZone, Weapon weapon) {
-        return new Survivor(output, actorSelection, initialZone, "Asim", weapon);
+        return new Survivor(output, initialZone, "Asim", weapon);
     }
 
     public Survivor generateBerin(Zone initialZone, Weapon weapon) {
-        return new Survivor(output, actorSelection, initialZone, "Berin", weapon);
+        return new Survivor(output, initialZone, "Berin", weapon);
     }
 }

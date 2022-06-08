@@ -45,6 +45,7 @@ public class ZombiePhase {
             handleZombieAttacks(zombies, zoneSurvivors);
         });
 
+        // TODO: move zombies per zone
         zombies.stream()
                 .filter(zombie -> !zombie.canFight())
                 .forEach(Zombie::moves);

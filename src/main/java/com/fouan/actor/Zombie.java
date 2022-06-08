@@ -1,7 +1,7 @@
 package com.fouan.actor;
 
 import com.fouan.board.Zone;
-import com.fouan.game.ActorSelection;
+import com.fouan.command.MoveCommand;
 import com.fouan.io.Output;
 import com.fouan.weapon.Weapon;
 
@@ -13,8 +13,8 @@ public class Zombie extends Actor {
     private final Random random;
     private final ZombieType type;
 
-    public Zombie(Random random, Output output, ActorSelection actorSelection, Zone initialZone, ZombieType type) {
-        super(output, actorSelection, initialZone);
+    public Zombie(Random random, Output output, Zone initialZone, ZombieType type) {
+        super(output, initialZone);
         this.random = random;
         this.type = type;
     }
@@ -28,7 +28,9 @@ public class Zombie extends Actor {
         int randomZoneIndex = random.nextInt(possibleZones.size());
         Zone newZone = possibleZones.get(randomZoneIndex);
 
-        changesZone(newZone);
+        MoveCommand moveCommand = new MoveCommand(this, newZone);
+        moveCommand.execute();
+        moveCommand.executeVisual(output);
     }
 
     public boolean canBeKilledByWeapon(Weapon weapon) {

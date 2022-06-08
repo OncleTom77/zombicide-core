@@ -2,10 +2,8 @@ package com.fouan.actor;
 
 import com.fouan.board.DangerLevel;
 import com.fouan.board.Zone;
-import com.fouan.game.ActorSelection;
 import com.fouan.game.Direction;
 import com.fouan.io.Output;
-import com.fouan.weapon.AttackResult;
 import com.fouan.weapon.Weapon;
 
 import java.util.Arrays;
@@ -21,17 +19,13 @@ public class Survivor extends Actor {
     private int experience;
     private int actionsPerTurn;
 
-    Survivor(Output output, ActorSelection actorSelection, Zone initialZone, String name, Weapon weapon) {
-        super(output, actorSelection, initialZone);
+    Survivor(Output output, Zone initialZone, String name, Weapon weapon) {
+        super(output, initialZone);
         this.name = name;
         this.weapon = weapon;
         wounds = 0;
         experience = 0;
         actionsPerTurn = 3;
-    }
-
-    public AttackResult attacks() {
-        return weapon.use();
     }
 
     public int getActionsPerTurn() {
@@ -47,7 +41,7 @@ public class Survivor extends Actor {
         boolean killableZombie = zone.getZombies()
                 .stream()
                 .anyMatch(zombie -> zombie.canBeKilledByWeapon(weapon));
-        return killableZombie && weapon.getRange() == 0;
+        return killableZombie && weapon.isMelee();
     }
 
     private boolean isRangedActionPossible() {
@@ -56,7 +50,7 @@ public class Survivor extends Actor {
                 .flatMap(Collection::stream)
                 .filter(Zone::containsZombie)
                 .map(zoneInSightWithZombie -> zoneInSightWithZombie.getPosition().computeDistance(zone.getPosition()))
-                .anyMatch(distance -> distance <= weapon.getRange());
+                .anyMatch(distance -> weapon.getRange().contains(distance));
     }
 
     public boolean isDead() {
@@ -66,6 +60,7 @@ public class Survivor extends Actor {
     public void suffersInjury(int damageInflicted) {
         wounds += damageInflicted;
         if (isDead()) {
+            output.display("Survivor " + name + " is dead!");
             zone.removeActors(singletonList(this));
         }
     }
