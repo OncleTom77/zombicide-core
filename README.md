@@ -69,6 +69,16 @@ Then
 
 ### 8. Zombies move to the survivors (no more random)
 
+- determine the noisiest Zone for each Zone containing Zombie that must move
+  - noisiest Zone in Line of Sight
+  - noisiest Zone
+- get the possible paths
+  - if no path exists, ignore locked doors and get the possible paths (doors will still block them)
+- split zombies if:
+  - there are several noisiest Zones
+  - there are several paths for each noisiest Zone
+  - the split must result in same number of each Zombie type per group 
+
 ### 9. Introduce buildings (without closed doors for now)
 
 - wall
@@ -90,3 +100,4 @@ Then
 - Survivor skills, experience, danger level (modify zombie spawn phase)
 - multiple weapons, body equipments
 - import map from file
+- hande multiple survivors per player (player can activate his survivors in any order)
