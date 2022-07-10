@@ -1,6 +1,12 @@
 package com.fouan.game.state;
 
+import com.fouan.command.Command;
+
+import java.util.List;
+
 public interface State {
 
-    State run(StateContext context);
+    List<Command> run(StateContext context);
+
+    State getNextState(StateContext context);
 }

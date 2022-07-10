@@ -2,26 +2,27 @@ package com.fouan.game.state;
 
 import com.fouan.command.Command;
 import com.fouan.command.EndPhaseCommand;
-import com.fouan.io.Output;
 
 import javax.inject.Named;
+import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 @Named("endPhaseState")
 public class EndPhaseState implements State {
     private final State playerActionDecisionState;
-    private final Output output;
 
-    public EndPhaseState(@Named("playerActionDecisionState") State playerActionDecisionState, Output output) {
+    public EndPhaseState(@Named("playerActionDecisionState") State playerActionDecisionState) {
         this.playerActionDecisionState = playerActionDecisionState;
-        this.output = output;
     }
 
     @Override
-    public State run(StateContext context) {
-        Command command = new EndPhaseCommand(context);
-        command.execute();
-        command.executeVisual(output);
+    public List<Command> run(StateContext context) {
+        return singletonList(new EndPhaseCommand(context));
+    }
 
+    @Override
+    public State getNextState(StateContext context) {
         return playerActionDecisionState;
     }
 }

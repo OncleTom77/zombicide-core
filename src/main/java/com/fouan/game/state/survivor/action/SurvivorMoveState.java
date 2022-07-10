@@ -12,20 +12,21 @@ import com.fouan.io.Output;
 import javax.inject.Named;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
+
 @Named
-public class SurvivorMoveState implements SurvivorActionState {
+public class SurvivorMoveState extends SurvivorActionState {
     private final Output output;
     private final ChoiceMaker choiceMaker;
-    private final State endSurvivorActionState;
 
     public SurvivorMoveState(Output output, ChoiceMaker choiceMaker, @Named("endSurvivorActionState") State endSurvivorActionState) {
+        super(endSurvivorActionState);
         this.output = output;
         this.choiceMaker = choiceMaker;
-        this.endSurvivorActionState = endSurvivorActionState;
     }
 
     @Override
-    public State run(StateContext context) {
+    public List<Command> run(StateContext context) {
         Survivor playingSurvivor = context.getPlayingSurvivor();
         List<Zone> connectedZones = playingSurvivor.getZone().getConnectedZones();
 
@@ -38,11 +39,7 @@ public class SurvivorMoveState implements SurvivorActionState {
         int choice = choiceMaker.getChoice(0, connectedZones.size() - 1);
         Zone chosenZone = connectedZones.get(choice);
 
-        Command command = new SurvivorMoveCommand(context, chosenZone);
-        command.execute();
-        command.executeVisual(output);
-
-        return endSurvivorActionState;
+        return singletonList(new SurvivorMoveCommand(context, chosenZone));
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.fouan.actor.ZombiePhase;
 import com.fouan.board.Zone;
 import com.fouan.command.Command;
 import com.fouan.game.GameResult;
-import com.fouan.io.Output;
 
 import javax.inject.Named;
 import java.util.ArrayList;
@@ -17,21 +16,19 @@ import java.util.stream.Collectors;
 public class ZombiePhaseState extends AbstractComputeGameResultState {
 
     private final ZombiePhase zombiePhase;
-    private final Output output;
     private final State endGameState;
     private final State spawnZombieState;
 
-    public ZombiePhaseState(ZombiePhase zombiePhase, Output output, @Named("endGameState") State endGameState, @Named("spawnZombieState") State spawnZombieState) {
+    public ZombiePhaseState(ZombiePhase zombiePhase, @Named("endGameState") State endGameState, @Named("spawnZombieState") State spawnZombieState) {
         this.zombiePhase = zombiePhase;
-        this.output = output;
         this.endGameState = endGameState;
         this.spawnZombieState = spawnZombieState;
     }
 
     @Override
-    public State run(StateContext context) {
-        List<Zone> zones = context.getZones().getZones();
+    public List<Command> run(StateContext context) {
         List<Command> commands = new ArrayList<>();
+        List<Zone> zones = context.getZones().getZones();
 
         List<Zombie> activatedZombies = zones.stream()
                 .map(zone -> {
@@ -53,11 +50,11 @@ public class ZombiePhaseState extends AbstractComputeGameResultState {
                 .map(zone -> zombiePhase.handleZombieMove(zone, activatedZombies))
                 .forEach(commands::addAll);
 
-        commands.forEach(command -> {
-            command.execute();
-            command.executeVisual(output);
-        });
+        return commands;
+    }
 
+    @Override
+    public State getNextState(StateContext context) {
         if (computeGameResult(context) != GameResult.UNDEFINED) {
             return endGameState;
         }

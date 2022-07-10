@@ -4,27 +4,22 @@ import com.fouan.command.Command;
 import com.fouan.command.SpendAllRemainingActionsCommand;
 import com.fouan.game.state.State;
 import com.fouan.game.state.StateContext;
-import com.fouan.io.Output;
 
 import javax.inject.Named;
+import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 @Named
-public class SurvivorDoNothingState implements SurvivorActionState {
+public class SurvivorDoNothingState extends SurvivorActionState {
 
-    private final State endSurvivorActionState;
-    private final Output output;
-
-    protected SurvivorDoNothingState(@Named("endSurvivorActionState") State endSurvivorActionState, Output output) {
-        this.endSurvivorActionState = endSurvivorActionState;
-        this.output = output;
+    protected SurvivorDoNothingState(@Named("endSurvivorActionState") State endSurvivorActionState) {
+        super(endSurvivorActionState);
     }
 
     @Override
-    public State run(StateContext context) {
-        Command command = new SpendAllRemainingActionsCommand(context);
-        command.execute();
-        command.executeVisual(output);
-        return endSurvivorActionState;
+    public List<Command> run(StateContext context) {
+        return singletonList(new SpendAllRemainingActionsCommand(context));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.fouan.game.state;
 
 import com.fouan.actor.Survivor;
+import com.fouan.command.Command;
 import com.fouan.game.state.survivor.action.SurvivorActionState;
 import com.fouan.io.ChoiceMaker;
 import com.fouan.io.Output;
@@ -8,6 +9,8 @@ import org.springframework.context.annotation.Lazy;
 
 import javax.inject.Named;
 import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 @Named("playerActionDecisionState")
 public class PlayerActionDecisionState extends AbstractComputeGameResultState {
@@ -25,7 +28,12 @@ public class PlayerActionDecisionState extends AbstractComputeGameResultState {
     }
 
     @Override
-    public State run(StateContext context) {
+    public List<Command> run(StateContext context) {
+        return emptyList();
+    }
+
+    @Override
+    public State getNextState(StateContext context) {
         Survivor playingSurvivor = context.getPlayingSurvivor();
         int actionCounter = context.getActionCounter();
 

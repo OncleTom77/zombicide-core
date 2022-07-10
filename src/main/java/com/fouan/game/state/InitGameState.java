@@ -5,7 +5,6 @@ import com.fouan.actor.Survivor;
 import com.fouan.board.*;
 import com.fouan.command.Command;
 import com.fouan.command.InitGameCommand;
-import com.fouan.io.Output;
 import com.fouan.weapon.WeaponFactory;
 
 import javax.inject.Named;
@@ -20,28 +19,23 @@ public class InitGameState implements State {
     private final ActorFactory actorFactory;
     private final WeaponFactory weaponFactory;
     private final ZombieSpawner zombieSpawner;
-    private final Output output;
 
     public InitGameState(@Named("playerActionDecisionState") State playerActionDecisionState,
                          ActorFactory actorFactory,
                          WeaponFactory weaponFactory,
-                         ZombieSpawner zombieSpawner,
-                         Output output) {
+                         ZombieSpawner zombieSpawner) {
         this.playerActionDecisionState = playerActionDecisionState;
         this.actorFactory = actorFactory;
         this.weaponFactory = weaponFactory;
         this.zombieSpawner = zombieSpawner;
-        this.output = output;
     }
 
     @Override
-    public State run(StateContext context) {
-        initGame(context);
-
-        return playerActionDecisionState;
+    public List<Command> run(StateContext context) {
+        return initGame(context);
     }
 
-    private void initGame(StateContext context) {
+    private List<Command> initGame(StateContext context) {
         int width = 9;
         int height = 6;
 
@@ -57,10 +51,7 @@ public class InitGameState implements State {
         commands.addAll(spawnZombies(zones));
         commands.addAll(spawnZombies(zones));
 
-        commands.forEach(command -> {
-            command.execute();
-            command.executeVisual(output);
-        });
+        return commands;
     }
 
     private List<Command> spawnZombies(Zones zones) {
@@ -80,5 +71,10 @@ public class InitGameState implements State {
                 actorFactory.generateAsim(startingZone, weaponFactory.generateAxe()),
                 actorFactory.generateBerin(startingZone, weaponFactory.generateAxe())
         );
+    }
+
+    @Override
+    public State getNextState(StateContext context) {
+        return playerActionDecisionState;
     }
 }
