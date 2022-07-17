@@ -3,6 +3,9 @@ package com.fouan.io;
 import javax.inject.Named;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Named
 public class CommandLineChoiceMaker implements ChoiceMaker {
@@ -17,10 +20,18 @@ public class CommandLineChoiceMaker implements ChoiceMaker {
 
     @Override
     public int getChoice(int min, int max) {
+        Set<Integer> choices = IntStream.range(min, max + 1)
+                .boxed()
+                .collect(Collectors.toSet());
+        return getChoice(choices);
+    }
+
+    @Override
+    public int getChoice(Set<Integer> choices) {
         do {
             int choice = read();
 
-            if (choice >= min && choice <= max) {
+            if (choices.contains(choice)) {
                 return choice;
             }
             output.display("Try again");

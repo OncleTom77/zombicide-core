@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public abstract class Weapon {
-//    private final boolean dual = true;
+    //    private final boolean dual = true;
 //    private final boolean noisy = false;
 //    private final boolean canOpenDoor = true;
 //    private final boolean noisyOpeningDoor = true;

@@ -12,13 +12,13 @@ public class Zone {
 
     private final Position position;
     private final Map<Direction, Zone> connectedZones;
-    private final List<Actor> actors;
+    private final Set<Actor> actors;
     private final List<BoardMarker> markers;
 
     public Zone(Position position) {
         this.position = position;
         connectedZones = new HashMap<>(4);
-        actors = new ArrayList<>();
+        actors = new HashSet<>();
         markers = new ArrayList<>();
     }
 
@@ -32,6 +32,14 @@ public class Zone {
 
     public void addActor(Actor actor) {
         actors.add(actor);
+    }
+
+    public void removeActor(Actor actor) {
+        actors.remove(actor);
+    }
+
+    public void addActors(List<? extends Actor> actorsToAdd) {
+        actors.addAll(actorsToAdd);
     }
 
     public void removeActors(List<? extends Actor> actorsToRemove) {

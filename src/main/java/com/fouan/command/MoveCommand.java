@@ -7,27 +7,31 @@ import com.fouan.io.Output;
 public class MoveCommand implements Command {
 
     private final Actor actor;
-    private final Zone zone;
+    private final Zone destination;
     private final Zone initialZone;
 
-    public MoveCommand(Actor actor, Zone zone) {
+    public MoveCommand(Actor actor, Zone destination) {
         this.actor = actor;
-        this.zone = zone;
+        this.destination = destination;
         initialZone = actor.getZone();
     }
 
     @Override
     public void execute() {
-        actor.changesZone(zone);
+        initialZone.removeActor(actor);
+        destination.addActor(actor);
+        actor.setZone(destination);
     }
 
     @Override
     public void executeVisual(Output output) {
-        output.display(actor + " moves from " + initialZone + " to " + zone);
+        output.display(actor + " moves from " + initialZone + " to " + destination);
     }
 
     @Override
     public void undo() {
-        actor.changesZone(initialZone);
+        destination.removeActor(actor);
+        initialZone.addActor(actor);
+        actor.setZone(initialZone);
     }
 }

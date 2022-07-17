@@ -2,7 +2,8 @@ package com.fouan.game.state.survivor.action;
 
 import com.fouan.actor.Survivor;
 import com.fouan.board.Zone;
-import com.fouan.command.MoveCommand;
+import com.fouan.command.Command;
+import com.fouan.command.SurvivorMoveCommand;
 import com.fouan.game.state.State;
 import com.fouan.game.state.StateContext;
 import com.fouan.io.ChoiceMaker;
@@ -37,7 +38,7 @@ public class SurvivorMoveState implements SurvivorActionState {
         int choice = choiceMaker.getChoice(0, connectedZones.size() - 1);
         Zone chosenZone = connectedZones.get(choice);
 
-        MoveCommand command = new MoveCommand(playingSurvivor, chosenZone);
+        Command command = new SurvivorMoveCommand(context, chosenZone);
         command.execute();
         command.executeVisual(output);
 

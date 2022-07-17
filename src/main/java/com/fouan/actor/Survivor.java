@@ -9,8 +9,6 @@ import com.fouan.weapon.Weapon;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static java.util.Collections.singletonList;
-
 public class Survivor extends Actor {
     public static final int LIFE_POINTS = 3;
     private final String name;
@@ -37,7 +35,6 @@ public class Survivor extends Actor {
     }
 
     private boolean isMeleeActionPossible() {
-        //TODO: when we will have multiple zombie types, check that survivor can kill the zombie with its equipped weapons
         boolean killableZombie = zone.getZombies()
                 .stream()
                 .anyMatch(zombie -> zombie.canBeKilledByWeapon(weapon));
@@ -59,10 +56,10 @@ public class Survivor extends Actor {
 
     public void suffersInjury(int damageInflicted) {
         wounds += damageInflicted;
-        if (isDead()) {
-            output.display("Survivor " + name + " is dead!");
-            zone.removeActors(singletonList(this));
-        }
+    }
+
+    public void heals(int woundsToHeal) {
+        wounds -= woundsToHeal;
     }
 
     public DangerLevel getDangerLevel() {

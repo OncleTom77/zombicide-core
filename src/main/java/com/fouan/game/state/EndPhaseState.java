@@ -1,38 +1,27 @@
 package com.fouan.game.state;
 
-import com.fouan.actor.Survivor;
+import com.fouan.command.Command;
+import com.fouan.command.EndPhaseCommand;
+import com.fouan.io.Output;
 
 import javax.inject.Named;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.stream.Collectors;
 
 @Named("endPhaseState")
 public class EndPhaseState implements State {
     private final State playerActionDecisionState;
+    private final Output output;
 
-    public EndPhaseState(@Named("playerActionDecisionState") State playerActionDecisionState) {
+    public EndPhaseState(@Named("playerActionDecisionState") State playerActionDecisionState, Output output) {
         this.playerActionDecisionState = playerActionDecisionState;
+        this.output = output;
     }
 
     @Override
     public State run(StateContext context) {
-        prepareNextTurn(context);
+        Command command = new EndPhaseCommand(context);
+        command.execute();
+        command.executeVisual(output);
 
         return playerActionDecisionState;
-    }
-
-    private void prepareNextTurn(StateContext context) {
-        Deque<Survivor> activatedSurvivors = context.getActivatedSurvivors();
-        Deque<Survivor> unactivatedSurvivors = context.getUnactivatedSurvivors();
-
-        Deque<Survivor> nextTurnSurvivors = activatedSurvivors.stream()
-                .filter(survivor -> !survivor.isDead())
-                .collect(Collectors.toCollection(ArrayDeque::new));
-        Survivor previousFirstPlayer = nextTurnSurvivors.pollFirst();
-        nextTurnSurvivors.addLast(previousFirstPlayer);
-
-        unactivatedSurvivors.addAll(nextTurnSurvivors);
-        activatedSurvivors.clear();
     }
 }

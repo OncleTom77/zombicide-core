@@ -1,15 +1,17 @@
 package com.fouan.board;
 
 import com.fouan.actor.ActorFactory;
+import com.fouan.actor.ZombieType;
 import com.fouan.cards.Deck;
 import com.fouan.cards.SpawnInfo;
 import com.fouan.cards.ZombieSpawnCard;
-import com.fouan.actor.ZombieType;
-import com.fouan.io.Output;
+import com.fouan.command.Command;
+import com.fouan.command.SpawnZombieCommand;
 
 import javax.inject.Named;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -17,13 +19,11 @@ import java.util.stream.IntStream;
 public class ZombieSpawner {
 
     private final ActorFactory actorFactory;
-    private final Output output;
 
     private Deck<ZombieSpawnCard> deck;
 
-    public ZombieSpawner(ActorFactory actorFactory, Output output) {
+    public ZombieSpawner(ActorFactory actorFactory) {
         this.actorFactory = actorFactory;
-        this.output = output;
         initDeck();
     }
 
@@ -43,13 +43,9 @@ public class ZombieSpawner {
         this.deck = new Deck<>(spawnCards);
     }
 
-    public void spawnZombies(DangerLevel level, Zone zone) {
-        deck.drawCard()
+    public Optional<Command> spawnZombies(DangerLevel level, Zone zone) {
+        return deck.drawCard()
                 .getSpawnInfo(level)
-                .ifPresent(spawnInfo -> {
-                    output.display("Zombie spawner generates " + spawnInfo.getQuantity() + " " + spawnInfo.getType());
-                    IntStream.range(0, spawnInfo.getQuantity())
-                            .forEach(value -> actorFactory.generateZombie(zone, spawnInfo.getType()));
-                });
+                .map(spawnInfo -> new SpawnZombieCommand(spawnInfo, zone, actorFactory));
     }
 }

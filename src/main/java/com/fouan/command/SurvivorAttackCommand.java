@@ -1,22 +1,22 @@
 package com.fouan.command;
 
-import com.fouan.actor.Survivor;
 import com.fouan.actor.Zombie;
 import com.fouan.board.Zone;
+import com.fouan.game.state.StateContext;
 import com.fouan.io.Output;
 import com.fouan.weapon.Weapon;
 
 import java.util.List;
 
-public class CombatCommand implements Command {
+public class SurvivorAttackCommand implements Command {
 
-    private final Survivor survivor;
+    private final StateContext context;
     private final Weapon weapon;
     private final Zone targetZone;
     private final List<Zombie> killedZombies;
 
-    public CombatCommand(Survivor survivor, Weapon weapon, Zone targetZone, List<Zombie> killedZombies) {
-        this.survivor = survivor;
+    public SurvivorAttackCommand(StateContext context, Weapon weapon, Zone targetZone, List<Zombie> killedZombies) {
+        this.context = context;
         this.weapon = weapon;
         this.targetZone = targetZone;
         this.killedZombies = killedZombies;
@@ -25,11 +25,13 @@ public class CombatCommand implements Command {
     @Override
     public void execute() {
         targetZone.removeActors(killedZombies);
+        killedZombies.forEach(zombie -> zombie.setZone(null));
+        context.setActionCounter(context.getActionCounter() + 1);
     }
 
     @Override
     public void executeVisual(Output output) {
-        output.display(survivor + " attacks with " + weapon + " on " + targetZone);
+        output.display(context.getPlayingSurvivor() + " attacks with " + weapon + " on " + targetZone);
         switch (killedZombies.size()) {
             case 0 -> output.display("attack missed");
             case 1 -> output.display(String.format("%d zombie is dead", killedZombies.size()));
@@ -39,6 +41,8 @@ public class CombatCommand implements Command {
 
     @Override
     public void undo() {
-        killedZombies.forEach(targetZone::addActor);
+        targetZone.addActors(killedZombies);
+        killedZombies.forEach(zombie -> zombie.setZone(targetZone));
+        context.setActionCounter(context.getActionCounter() - 1);
     }
 }

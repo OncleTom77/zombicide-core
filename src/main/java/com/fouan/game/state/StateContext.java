@@ -1,9 +1,7 @@
 package com.fouan.game.state;
 
 import com.fouan.actor.Survivor;
-import com.fouan.board.Zone;
 import com.fouan.board.Zones;
-import com.fouan.weapon.Weapon;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -12,25 +10,27 @@ import java.util.List;
 public class StateContext {
     private Zones zones;
     private List<Survivor> survivors;
+    // TODO: Refactor the 2 lists below in 1 list with firstPlayer index and currentPlayerIndex
     private Deque<Survivor> unactivatedSurvivors;
     private Deque<Survivor> activatedSurvivors;
     private int actionCounter;
-    private Weapon selectedWeapon;
-    private Zone targetZone;
 
     public StateContext() {
-    }
-
-    public void init(Zones zones, List<Survivor> survivors) {
-        this.zones = zones;
-        this.survivors = survivors;
-        unactivatedSurvivors = new ArrayDeque<>(survivors);
+        unactivatedSurvivors = new ArrayDeque<>();
         activatedSurvivors = new ArrayDeque<>();
         actionCounter = 0;
     }
 
     public Zones getZones() {
         return zones;
+    }
+
+    public void setZones(Zones zones) {
+        this.zones = zones;
+    }
+
+    public void setSurvivors(List<Survivor> survivors) {
+        this.survivors = survivors;
     }
 
     public Deque<Survivor> getUnactivatedSurvivors() {
@@ -61,21 +61,5 @@ public class StateContext {
         return survivors.stream()
                 .filter(survivor -> !survivor.isDead())
                 .toList();
-    }
-
-    public Weapon getSelectedWeapon() {
-        return selectedWeapon;
-    }
-
-    public void setSelectedWeapon(Weapon selectedWeapon) {
-        this.selectedWeapon = selectedWeapon;
-    }
-
-    public Zone getTargetZone() {
-        return targetZone;
-    }
-
-    public void setTargetZone(Zone targetZone) {
-        this.targetZone = targetZone;
     }
 }

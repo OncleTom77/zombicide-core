@@ -6,7 +6,6 @@ public interface Command {
 
     void execute();
 
-    //TODO: handle this in LoopGame
     void executeVisual(Output output);
 
     void undo();

@@ -1,10 +1,12 @@
 package com.fouan.game.state.survivor.action;
 
-import com.fouan.actor.Survivor;
+import com.fouan.command.Command;
+import com.fouan.command.EndPlayerTurnCommand;
 import com.fouan.game.GameResult;
 import com.fouan.game.state.AbstractComputeGameResultState;
 import com.fouan.game.state.State;
 import com.fouan.game.state.StateContext;
+import com.fouan.io.Output;
 
 import javax.inject.Named;
 
@@ -14,20 +16,24 @@ public class EndSurvivorActionState extends AbstractComputeGameResultState {
     private final State endGameState;
     private final State zombiePhaseState;
     private final State playerActionDecisionState;
+    private final Output output;
 
     public EndSurvivorActionState(@Named("endGameState") State endGameState,
                                   @Named("zombiePhaseState") State zombiePhaseState,
-                                  @Named("playerActionDecisionState") State playerActionDecisionState) {
+                                  @Named("playerActionDecisionState") State playerActionDecisionState,
+                                  Output output) {
         this.endGameState = endGameState;
         this.zombiePhaseState = zombiePhaseState;
         this.playerActionDecisionState = playerActionDecisionState;
+        this.output = output;
     }
 
     @Override
     public State run(StateContext context) {
-        context.setActionCounter(context.getActionCounter() + 1);
         if (context.getActionCounter() >= context.getPlayingSurvivor().getActionsPerTurn()) {
-            endPlayerTurn(context);
+            Command command = new EndPlayerTurnCommand(context);
+            command.execute();
+            command.executeVisual(output);
         }
 
         if (computeGameResult(context) != GameResult.UNDEFINED) {
@@ -36,12 +42,5 @@ public class EndSurvivorActionState extends AbstractComputeGameResultState {
             return zombiePhaseState;
         }
         return playerActionDecisionState;
-    }
-
-    private void endPlayerTurn(StateContext context) {
-        Survivor playingSurvivor = context.getPlayingSurvivor();
-        context.getUnactivatedSurvivors().remove(playingSurvivor);
-        context.getActivatedSurvivors().addLast(playingSurvivor);
-        context.setActionCounter(0);
     }
 }
