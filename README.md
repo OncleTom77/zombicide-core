@@ -70,7 +70,7 @@ Then
 ### 8. Zombies move to the survivors (no more random)
 
 - determine the noisiest Zone for each Zone containing Zombie that must move
-  - noisiest Zone in Line of Sight
+  - noisiest Zone with Survivors in Line of Sight
   - noisiest Zone
 - get the possible paths
   - if no path exists, ignore locked doors and get the possible paths (doors will still block them)

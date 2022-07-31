@@ -12,13 +12,13 @@ public class Zone {
 
     private final Position position;
     private final Map<Direction, Zone> connectedZones;
-    private final Set<Actor> actors;
+    private final List<Actor> actors;
     private final List<BoardMarker> markers;
 
     public Zone(Position position) {
         this.position = position;
         connectedZones = new HashMap<>(4);
-        actors = new HashSet<>();
+        actors = new ArrayList<>();
         markers = new ArrayList<>();
     }
 
@@ -43,7 +43,8 @@ public class Zone {
     }
 
     public void removeActors(List<? extends Actor> actorsToRemove) {
-        actors.removeAll(actorsToRemove);
+        /* Implementation note: cannot use List#removeAll as 2 zombies of same type on the same Zone are considered equals */
+        actorsToRemove.forEach(actors::remove);
     }
 
     public boolean containsZombie() {
@@ -94,6 +95,19 @@ public class Zone {
         return Optional.ofNullable(connectedZones.get(direction));
     }
 
+    public void removeConnection(Zone zone) {
+        Arrays.stream(Direction.values())
+                .forEach(direction -> connectedZones.remove(direction, zone));
+    }
+
+    public List<Zone> getAllInSight() {
+        // TODO: check if the zone blocks the line of sight when there will be wall and other blocking sight zones
+        return Arrays.stream(Direction.values())
+                .map(direction -> getAllInDirection(direction))
+                .flatMap(Collection::stream)
+                .toList();
+    }
+
     public List<Zone> getAllInDirection(Direction direction) {
         return getAllInDirection(new ArrayList<>(), direction);
     }
@@ -104,6 +118,23 @@ public class Zone {
             neighborZone.getAllInDirection(acc, direction);
         });
         return acc;
+    }
+
+    public int getNoise() {
+        return getSurvivors().size();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Zone zone = (Zone) o;
+        return Objects.equals(position, zone.position);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position);
     }
 
     @Override

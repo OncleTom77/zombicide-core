@@ -8,6 +8,7 @@ import com.fouan.weapon.Weapon;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 
 public class Survivor extends Actor {
     public static final int LIFE_POINTS = 3;
@@ -68,6 +69,19 @@ public class Survivor extends Actor {
 
     public Weapon getWeapon() {
         return weapon;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Survivor survivor = (Survivor) o;
+        return Objects.equals(name, survivor.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 
     @Override

@@ -3,7 +3,9 @@ package com.fouan.command;
 import com.fouan.actor.Actor;
 import com.fouan.board.Zone;
 import com.fouan.io.Output;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode
 public class MoveCommand implements Command {
 
     private final Actor actor;

@@ -4,6 +4,8 @@ import com.fouan.board.Zone;
 import com.fouan.io.Output;
 import com.fouan.weapon.Weapon;
 
+import java.util.Objects;
+
 public class Zombie extends Actor {
 
     private final ZombieType type;
@@ -24,4 +26,18 @@ public class Zombie extends Actor {
     public ZombieType getType() {
         return type;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Zombie zombie = (Zombie) o;
+        return type == zombie.type && Objects.equals(zone, zombie.zone);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, zone);
+    }
+
 }

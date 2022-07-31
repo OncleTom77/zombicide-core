@@ -1,17 +1,24 @@
 package com.fouan.actor;
 
+import com.fouan.algorithm.pathfinding.ZombicidePathFinder;
 import com.fouan.board.Zone;
+import com.fouan.board.ZoneUtils;
+import com.fouan.board.Zones;
 import com.fouan.command.Command;
+import com.fouan.command.GenerateZombieAfterSplitCommand;
 import com.fouan.command.MoveCommand;
 import com.fouan.command.ZombieAttackCommand;
 import com.fouan.game.ActorSelection;
 import com.fouan.io.ChoiceMaker;
 import com.fouan.io.Output;
+import com.fouan.utils.ListUtils;
 
 import javax.inject.Named;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toMap;
 
 @Named
 public class ZombiePhase {
@@ -19,13 +26,15 @@ public class ZombiePhase {
     private final ChoiceMaker choiceMaker;
     private final Output output;
     private final ActorSelection actorSelection;
-    private final Random random;
+    private final ActorFactory actorFactory;
+    private final ZombicidePathFinder zombicidePathFinder;
 
-    public ZombiePhase(ChoiceMaker choiceMaker, Output output, ActorSelection actorSelection, Random random) {
+    public ZombiePhase(ChoiceMaker choiceMaker, Output output, ActorSelection actorSelection, ActorFactory actorFactory, ZombicidePathFinder zombicidePathFinder) {
         this.choiceMaker = choiceMaker;
         this.output = output;
         this.actorSelection = actorSelection;
-        this.random = random;
+        this.actorFactory = actorFactory;
+        this.zombicidePathFinder = zombicidePathFinder;
     }
 
     public List<Command> handleZombieAttacks(List<Zombie> attackingZombies, List<Survivor> survivors) {
@@ -71,25 +80,56 @@ public class ZombiePhase {
         return woundsPerSurvivors;
     }
 
-    public List<Command> handleZombieMove(Zone zone, List<Zombie> activatedZombies) {
-        List<Zombie> zombies = zone.getZombies()
+    public List<Command> handleZombieMove(Zones zones, Zone currentZone, List<Zombie> activatedZombies, List<Zone> defaultNoisiestZones) {
+        List<Zombie> zombies = currentZone.getZombies()
                 .stream()
                 .filter(zombie -> !activatedZombies.contains(zombie))
                 .toList();
+
+        if (zombies.isEmpty()) {
+            return Collections.emptyList();
+        }
         activatedZombies.addAll(zombies);
 
-        Zone destinationZone = getDestinationZone(zone);
+        List<Zone> destinationZones = getDestinationZones(currentZone, defaultNoisiestZones);
+        Set<Zone> nextZones = destinationZones.stream()
+                .map(destination -> zombicidePathFinder.findNextZoneOfAllShortestPaths(zones, currentZone, destination))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
 
-        return zombies.stream()
-                .map(zombie -> new MoveCommand(zombie, destinationZone))
-                .map(moveCommand -> (Command) moveCommand)
-                .toList();
+        // TODO: create Group command to allow multiple commands to be handle together (applied or rollbacked)
+        return splitZombiesInEqualGroups(zombies, nextZones);
     }
 
-    public Zone getDestinationZone(Zone zone) {
-        // TODO: make Zombies move together toward survivors
-        List<Zone> possibleZones = zone.getConnectedZones();
-        int randomZoneIndex = random.nextInt(possibleZones.size());
-        return possibleZones.get(randomZoneIndex);
+    private List<Zone> getDestinationZones(Zone zone, List<Zone> defaultNoisiestZones) {
+        List<Zone> noisiestZonesInSight = ZoneUtils.getNoisiestZones(zone.getAllInSight(), true);
+
+        return noisiestZonesInSight.isEmpty()
+                ? defaultNoisiestZones
+                : noisiestZonesInSight;
+    }
+
+    List<Command> splitZombiesInEqualGroups(List<Zombie> zombies, Set<Zone> nextZones) {
+        Map<ZombieType, ArrayDeque<Zombie>> zombiesPerType = zombies.stream()
+                .collect(toMap(
+                        Zombie::getType,
+                        o -> new ArrayDeque<>(List.of(o)),
+                        (a, b) -> ListUtils.concat(a, b, ArrayDeque::new)
+                ));
+
+        List<Command> result = new ArrayList<>();
+
+        zombiesPerType.forEach((zombieType, existingZombies) -> {
+            while (!existingZombies.isEmpty()) {
+                for (Zone nextZone : nextZones) {
+                    if (existingZombies.isEmpty()) {
+                        result.add(new GenerateZombieAfterSplitCommand(nextZone, zombieType, actorFactory));
+                    } else {
+                        result.add(new MoveCommand(existingZombies.pop(), nextZone));
+                    }
+                }
+            }
+        });
+        return result;
     }
 }

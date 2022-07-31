@@ -30,7 +30,7 @@ public class Position {
     }
 
     public int computeDistance(Position other) {
-        return Math.max(Math.abs(x - other.x), Math.abs(y - other.y));
+        return Math.abs(x - other.x) + Math.abs(y - other.y);
     }
 
     @Override
