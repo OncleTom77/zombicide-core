@@ -1,6 +1,6 @@
 package com.fouan;
 
-import com.fouan.game.Game;
+import com.fouan.old.game.Game;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
