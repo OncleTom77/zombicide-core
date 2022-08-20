@@ -1,8 +1,8 @@
 package com.fouan.old.actor;
 
 import com.fouan.algorithm.pathfinding.ZombicidePathFinder;
-import com.fouan.old.board.Zone;
 import com.fouan.old.board.ZoneUtils;
+import com.fouan.old.board.Zone;
 import com.fouan.old.board.Zones;
 import com.fouan.old.command.Command;
 import com.fouan.old.command.GenerateZombieAfterSplitCommand;

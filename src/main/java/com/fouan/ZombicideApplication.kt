@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
 }
 
 @Component
-class GameStartup(
+internal class GameStartup(
     private val game: Game,
 ) : CommandLineRunner {
 
@@ -25,7 +25,7 @@ class GameStartup(
 }
 
 @Configuration
-class ZombicideConfig {
+internal class ZombicideConfig {
 
     @Bean
     fun random() = Random()

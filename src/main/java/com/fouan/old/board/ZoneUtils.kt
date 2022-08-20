@@ -4,10 +4,10 @@ object ZoneUtils {
     //    public static final Comparator<Zone> compareZonePerNoise = Comparator.comparing(Zone::getNoise);
     @JvmStatic
     fun getNoisiestZones(zones: List<Zone>, withSurvivors: Boolean): List<Zone> {
-        val matchingZones = zones.filter { zone: Zone -> !withSurvivors || zone.containsSurvivor() }
-        val maxNoise: Int? = matchingZones.maxOfOrNull { obj: Zone -> obj.noise }
+        val matchingZones = zones.filter { !withSurvivors || it.containsSurvivor() }
+        val maxNoise = matchingZones.maxOfOrNull { it.noise }
 
-        return maxNoise?.let { it: Int ->
+        return maxNoise?.let {
             matchingZones.filter { zone: Zone -> zone.noise == it }
         } ?: emptyList()
     }

@@ -1,9 +1,9 @@
 package com.fouan.old.game.state;
 
+import com.fouan.old.board.ZoneUtils;
 import com.fouan.old.actor.Zombie;
 import com.fouan.old.actor.ZombiePhase;
 import com.fouan.old.board.Zone;
-import com.fouan.old.board.ZoneUtils;
 import com.fouan.old.command.Command;
 import com.fouan.old.game.GameResult;
 

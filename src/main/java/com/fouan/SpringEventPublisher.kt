@@ -10,7 +10,5 @@ internal class SpringEventPublisher(
     private val applicationEventPublisher: ApplicationEventPublisher
 ) : EventsPublisher {
 
-    override fun fire(event: Event<*>) {
-        applicationEventPublisher.publishEvent(event)
-    }
+    override fun fire(event: Event<*>) = applicationEventPublisher.publishEvent(event)
 }
