@@ -1,12 +1,12 @@
-package com.fouan.turns
+package com.fouan.phases
 
 import com.fouan.events.ZombiesTurnEnded
 import com.fouan.events.ZombiesTurnStarted
 import com.fouan.game.view.GameView
 
-internal class ZombiesTurn(
+internal class ZombiesPhase(
     private val gameView: GameView,
-) : Turn {
+) : Phase {
 
     override fun play() {
         startZombiesTurn()

@@ -1,12 +1,12 @@
-package com.fouan.turns
+package com.fouan.phases
 
 import com.fouan.events.SurvivorsTurnEnded
 import com.fouan.events.SurvivorsTurnStarted
 import com.fouan.game.view.GameView
 
-internal class SurvivorsTurn(
+internal class SurvivorsPhase(
     private val gameView: GameView,
-) : Turn {
+) : Phase {
 
     override fun play() {
         startSurvivorsTurn()
