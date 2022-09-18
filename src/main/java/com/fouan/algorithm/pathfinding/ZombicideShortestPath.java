@@ -1,7 +1,7 @@
 package com.fouan.algorithm.pathfinding;
 
-import com.fouan.board.Zone;
-import com.fouan.board.Zones;
+import com.fouan.old.board.Zone;
+import com.fouan.old.board.Zones;
 
 import java.util.List;
 import java.util.Map;

@@ -1,11 +1,11 @@
-package com.fouan.actor;
+package com.fouan.old.actor;
 
-import com.fouan.board.Position;
-import com.fouan.board.Zone;
-import com.fouan.command.Command;
-import com.fouan.command.GenerateZombieAfterSplitCommand;
-import com.fouan.command.MoveCommand;
-import com.fouan.io.Output;
+import com.fouan.zones.Position;
+import com.fouan.old.board.Zone;
+import com.fouan.old.command.Command;
+import com.fouan.old.command.GenerateZombieAfterSplitCommand;
+import com.fouan.old.command.MoveCommand;
+import com.fouan.display.Output;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

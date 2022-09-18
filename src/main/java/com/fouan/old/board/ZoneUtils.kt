@@ -1,4 +1,4 @@
-package com.fouan.board
+package com.fouan.old.board
 
 object ZoneUtils {
     //    public static final Comparator<Zone> compareZonePerNoise = Comparator.comparing(Zone::getNoise);
