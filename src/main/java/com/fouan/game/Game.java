@@ -1,18 +1,18 @@
 package com.fouan.game;
 
-import javax.inject.Named;
+import com.fouan.game.view.GameView;
+import lombok.AllArgsConstructor;
 
-@Named
-public class Game {
+//@Named
+@AllArgsConstructor
+public final class Game {
 
-    private final LoopGame loopGame;
+    private final GameView gameView;
 
-    public Game(LoopGame loopGame) {
-        this.loopGame = loopGame;
+
+    public void run() {
+        while (!gameView.isGameDone()) {
+
+        }
     }
-
-    public void start() {
-        loopGame.run();
-    }
-
 }
