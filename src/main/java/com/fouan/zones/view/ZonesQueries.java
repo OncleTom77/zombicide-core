@@ -10,6 +10,8 @@ import java.util.Set;
 
 public interface ZonesQueries {
 
+    List<Zone> findAll();
+
     Optional<Zone> findByActorId(ActorId actorId);
 
     List<Zone> findByMarker(ZoneMarker marker);

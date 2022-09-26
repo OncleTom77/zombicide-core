@@ -1,5 +1,6 @@
 package com.fouan.actors.view;
 
+import com.fouan.actors.Actor;
 import com.fouan.actors.ActorId;
 import com.fouan.actors.Survivor;
 import com.fouan.actors.zombies.Zombie;
@@ -22,7 +23,7 @@ import static com.fouan.actors.view.LifeStatus.ALIVE;
 
 @Named
 @AllArgsConstructor
-final class ActorsView implements ActorsCommands, ActorsQueries {
+public final class ActorsView implements ActorsCommands, ActorsQueries {
 
     private final List<ActorEvent> history = new LinkedList<>();
     private final ComputedActors actors = new ComputedActors();

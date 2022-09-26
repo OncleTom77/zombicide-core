@@ -2,8 +2,16 @@ package com.fouan.zones;
 
 import lombok.EqualsAndHashCode;
 
+import java.util.Comparator;
+
 @EqualsAndHashCode
 public final class Position {
+    public static final Comparator<Position> BOARD_COMPARATOR = (o1, o2) -> {
+        if (o1.y == o2.y) {
+            return o1.x - o2.x;
+        }
+        return o1.y - o2.y;
+    };
 
     private final int x;
     private final int y;
@@ -31,6 +39,10 @@ public final class Position {
 
     public int computeDistance(Position other) {
         return Math.abs(x - other.x) + Math.abs(y - other.y);
+    }
+
+    public int getX() {
+        return x;
     }
 
     @Override
