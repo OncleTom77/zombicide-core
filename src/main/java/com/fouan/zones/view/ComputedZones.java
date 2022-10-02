@@ -6,6 +6,7 @@ import com.fouan.zones.Zone;
 import lombok.Getter;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 public final class ComputedZones {
 
@@ -27,12 +28,10 @@ public final class ComputedZones {
         zones.put(zone.getPosition(), zone);
     }
 
-    public void update(Position position, ComputedZone zone) {
-        if (!zones.containsKey(zone.getPosition())) {
-            throw new IllegalStateException("Zone does not exist");
-        }
-
-        zones.put(position, zone);
+    public void update(Position position, UnaryOperator<ComputedZone> updater) {
+        findByPosition(position)
+                .map(updater)
+                .ifPresent(computedZone -> zones.put(position, computedZone));
     }
 
     public Optional<ComputedZone> findByPosition(Position position) {

@@ -20,7 +20,7 @@ public final class Survivor extends Actor {
     private final int experience;
     private final DangerLevel dangerLevel;
 
-    private Survivor(ActorId id, int lifePoints, String name, Weapon weapon, int experience) {
+    public Survivor(ActorId id, int lifePoints, String name, Weapon weapon, int experience) {
         super(id, lifePoints);
         this.name = name;
         this.weapon = weapon;

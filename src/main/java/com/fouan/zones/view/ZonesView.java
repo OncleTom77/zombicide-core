@@ -3,6 +3,7 @@ package com.fouan.zones.view;
 import com.fouan.actors.ActorId;
 import com.fouan.events.BoardInitialized;
 import com.fouan.events.SurvivorAdded;
+import com.fouan.events.ZombieSpawned;
 import com.fouan.events.ZoneEvent;
 import com.fouan.zones.Zone;
 import com.fouan.zones.Zone.ZoneMarker;
@@ -36,15 +37,21 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
 
     @EventListener
     public void handleSurvivorAdded(SurvivorAdded event) {
-        ComputedZones.ComputedZone computedZone = zones.findByPosition(event.getZone().getPosition())
-                .orElseThrow();
+        zones.update(event.getZone().getPosition(), computedZone -> {
+                    List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
+                    actorIds.add(event.getSurvivor().getId());
+                    return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
+                }
+        );
+    }
 
-        List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
-        actorIds.add(event.getSurvivor().getId());
-
-        zones.update(
-                computedZone.getPosition(),
-                new ComputedZones.ComputedZone(computedZone.getZone(), actorIds)
+    @EventListener
+    public void handleZombieSpawned(ZombieSpawned event) {
+        zones.update(event.getZone().getPosition(), computedZone -> {
+                    List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
+                    actorIds.add(event.getZombie().getId());
+                    return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
+                }
         );
     }
 

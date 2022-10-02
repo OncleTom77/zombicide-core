@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
 
 import javax.inject.Named;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -37,14 +36,13 @@ public final class ConsoleDisplayer {
     @EventListener
     public void handleSurvivorsTurnStarted(SurvivorsTurnStarted event) {
         // Display board
-        Comparator<Zone> zonePositionComparator = (o1, o2) -> Position.BOARD_COMPARATOR.compare(o1.getPosition(), o2.getPosition());
         List<Zone> zones = zonesView.findAll()
                 .stream()
-                .sorted(zonePositionComparator)
+                .sorted(Zone.ZONE_POSITION_COMPARATOR)
                 .toList();
         StringBuilder horizontalLine = new StringBuilder("-");
         int width = getWidth(zones);
-        horizontalLine.append("-----".repeat(Math.max(0, width)));
+        horizontalLine.append("-----".repeat(width));
 
         StringBuilder line = new StringBuilder();
         output.display(horizontalLine.toString());
@@ -69,7 +67,7 @@ public final class ConsoleDisplayer {
                 .map(Zone::getPosition)
                 .mapToInt(Position::getX)
                 .max()
-                .orElseThrow();
+                .orElseThrow() + 1;
     }
 
     String getStringRepresentation(Zone zone) {
