@@ -3,8 +3,10 @@ package com.fouan.phases
 import com.fouan.events.ZombiesTurnEnded
 import com.fouan.events.ZombiesTurnStarted
 import com.fouan.game.view.GameView
+import javax.inject.Named
 
-internal class ZombiesPhase(
+@Named
+class ZombiesPhase(
     private val gameView: GameView,
 ) : Phase {
 

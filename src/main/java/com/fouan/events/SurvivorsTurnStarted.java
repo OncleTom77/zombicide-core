@@ -1,10 +1,17 @@
 package com.fouan.events;
 
+import com.fouan.actors.Survivor;
+import lombok.Getter;
+
+@Getter
 public final class SurvivorsTurnStarted
         extends Event<SurvivorsTurnStarted>
-        implements GameEvent {
+        implements ActorEvent, GameEvent {
 
-    public SurvivorsTurnStarted(int turn) {
+    private final Survivor survivor;
+
+    public SurvivorsTurnStarted(int turn, Survivor survivor) {
         super(turn);
+        this.survivor = survivor;
     }
 }

@@ -1,6 +1,6 @@
 package com.fouan
 
-import com.fouan.old.game.Game
+import com.fouan.game.Game
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -21,7 +21,7 @@ internal class GameStartup(
     private val game: Game,
 ) : CommandLineRunner {
 
-    override fun run(args: Array<String>) = game.start()
+    override fun run(args: Array<String>) = game.run()
 }
 
 @Configuration

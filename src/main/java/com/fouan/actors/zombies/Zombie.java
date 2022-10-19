@@ -13,14 +13,12 @@ public abstract class Zombie extends Actor {
 
     protected final String name;
     protected final int damage;
-    protected final int lifePoints;
     protected final int experienceProvided;
 
-    protected Zombie(ActorId id, String name, int damage, int lifePoints, int experienceProvided) {
-        super(id, lifePoints);
+    protected Zombie(ActorId id, String name, int damage, int experienceProvided) {
+        super(id);
         this.name = name;
         this.damage = damage;
-        this.lifePoints = lifePoints;
         this.experienceProvided = experienceProvided;
     }
 

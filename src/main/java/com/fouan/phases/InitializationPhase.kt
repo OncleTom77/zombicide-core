@@ -55,8 +55,8 @@ internal class InitializationPhase(
     }
 
     private fun initializeSurvivors() {
-        val asim = Survivor(ActorId("Asim"), 3, "Asim", Axe(), 0)
-        val berin = Survivor(ActorId("Berin"), 3, "Berin", Axe(), 0)
+        val asim = Survivor(ActorId("Asim"), 3, "Asim", Axe(), 0, 3)
+        val berin = Survivor(ActorId("Berin"), 3, "Berin", Axe(), 0, 3)
 
         val startingZone = zonesView.findByMarker(Zone.ZoneMarker.STARTING_ZONE)[0]
         gameView.fireEvent(SurvivorAdded(gameView.currentTurn, asim, startingZone))

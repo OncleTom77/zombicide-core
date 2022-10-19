@@ -14,8 +14,6 @@ public abstract class Actor {
 
     protected final ActorId id;
 
-    protected final int lifePoints;
-
     public abstract void moveTo(Zone zoneToMove, GameView gameView);
 
     public abstract void attack(ActorId actorId, GameView gameView);

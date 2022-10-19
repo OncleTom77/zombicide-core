@@ -1,6 +1,3 @@
 package com.fouan.events;
 
-public interface ZoneEvent {
-
-    int getTurn();
-}
+public interface ZoneEvent extends GameEvent { }

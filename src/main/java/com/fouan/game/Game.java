@@ -2,25 +2,28 @@ package com.fouan.game;
 
 import com.fouan.game.view.GameView;
 import com.fouan.phases.Phase;
-import com.fouan.phases.SurvivorsPhase;
-import lombok.AllArgsConstructor;
 
 import javax.inject.Named;
+import javax.inject.Qualifier;
 
 @Named
-@AllArgsConstructor
 public final class Game {
 
     private final GameView gameView;
-    //    @Named("initGameState")
-//    private final State initialState;
-    @Named("initializationPhase")
+
     private final Phase initializePhase;
+
+    private final Round round;
+
+    public Game(GameView gameView,
+                @Named("initializationPhase") Phase initializePhase, Round round) {
+        this.gameView = gameView;
+        this.initializePhase = initializePhase;
+        this.round = round;
+    }
 
     public void run() {
         initializePhase.play();
-        new SurvivorsPhase(gameView).play();
-//        while (!gameView.isGameDone()) {
-//        }
+        round.start();
     }
 }

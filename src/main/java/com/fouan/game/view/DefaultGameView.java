@@ -41,7 +41,7 @@ final class DefaultGameView implements GameView {
 
     @Override
     public int getCurrentTurn() {
-        return Optional.ofNullable(gameHistory.peekLast())
+        return Optional.ofNullable(gameHistory.peek())
                 .map(GameEvent::getTurn)
                 .orElse(0);
     }

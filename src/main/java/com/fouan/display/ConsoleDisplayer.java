@@ -2,9 +2,9 @@ package com.fouan.display;
 
 import com.fouan.actors.ActorId;
 import com.fouan.actors.view.ActorsView;
-import com.fouan.events.SurvivorAdded;
-import com.fouan.events.SurvivorsTurnStarted;
-import com.fouan.events.ZombieSpawned;
+import com.fouan.events.*;
+import com.fouan.game.view.GameView;
+import com.fouan.old.io.ChoiceMaker;
 import com.fouan.zones.Position;
 import com.fouan.zones.Zone;
 import com.fouan.zones.view.ZonesView;
@@ -22,6 +22,8 @@ public final class ConsoleDisplayer {
     private final Output output;
     private final ZonesView zonesView;
     private final ActorsView actorsView;
+    private final GameView gameView;
+    private final ChoiceMaker choiceMaker;
 
     @EventListener
     public void handleSurvivorAdded(SurvivorAdded event) {
@@ -33,7 +35,7 @@ public final class ConsoleDisplayer {
         output.display("Zombie " + event.getZombie().getName() + " spawned at " + event.getZone().getPosition().toString());
     }
 
-    @EventListener
+
     public void handleSurvivorsTurnStarted(SurvivorsTurnStarted event) {
         // Display board
         List<Zone> zones = zonesView.findAll()
@@ -89,5 +91,21 @@ public final class ConsoleDisplayer {
         } else {
             return "  ";
         }
+    }
+
+    @EventListener
+    public void handleAvailableActionsDefined(AvailableActionsDefined event) {
+        var availableActions = event.getActions();
+        int choice = 0;
+
+        if (availableActions.size() > 1) {
+            output.display("Choose your action:");
+            for (int i = 0; i < availableActions.size(); i++) {
+                output.display(i + ": " + availableActions.get(i));
+            }
+
+            choice = choiceMaker.getChoice(0, availableActions.size() - 1);
+        }
+        gameView.fireEvent(new ActionChosen(event.getTurn(), availableActions.get(choice)));
     }
 }

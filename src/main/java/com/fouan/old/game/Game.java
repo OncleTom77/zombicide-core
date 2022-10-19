@@ -2,7 +2,7 @@ package com.fouan.old.game;
 
 import javax.inject.Named;
 
-@Named
+//@Named
 public class Game {
 
     private final LoopGame loopGame;
