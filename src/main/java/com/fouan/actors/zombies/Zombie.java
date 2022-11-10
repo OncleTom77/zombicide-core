@@ -21,18 +21,4 @@ public abstract class Zombie extends Actor {
         this.damage = damage;
         this.experienceProvided = experienceProvided;
     }
-
-    @Override
-    public void moveTo(Zone zoneToMove, GameView gameView) {
-        gameView.fireEvent(
-            new ZombieMoved(gameView.getCurrentTurn(), id, zoneToMove)
-        );
-    }
-
-    @Override
-    public void attack(ActorId actorId, GameView gameView) {
-        gameView.fireEvent(
-            new SurvivorLostLifePoints(gameView.getCurrentTurn(), actorId, id, damage)
-        );
-    }
 }

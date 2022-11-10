@@ -1,5 +1,6 @@
 package com.fouan.display;
 
+import com.fouan.actions.Actions;
 import com.fouan.actors.ActorId;
 import com.fouan.actors.view.ActorsView;
 import com.fouan.events.*;
@@ -35,8 +36,47 @@ public final class ConsoleDisplayer {
         output.display("Zombie " + event.getZombie().getName() + " spawned at " + event.getZone().getPosition().toString());
     }
 
+    @EventListener
+    public void handleAvailableZonesForSurvivorMoveDefined(AvailableZonesForSurvivorMoveDefined event) {
+        var availableZones = event.getZones();
+        int choice = 0;
 
-    public void handleSurvivorsTurnStarted(SurvivorsTurnStarted event) {
+        if (availableZones.size() > 1) {
+            output.display("Choose your action:");
+            for (int i = 0; i < availableZones.size(); i++) {
+                output.display(i + ": " + availableZones.get(i));
+            }
+
+            choice = choiceMaker.getChoice(0, availableZones.size() - 1);
+        }
+
+        var chosenZone = availableZones.get(choice);
+
+        gameView.fireEvent(new ZoneChosen(event.getTurn(), chosenZone.getPosition()));
+    }
+
+    @EventListener
+    public void handleAvailableActionsDefined(AvailableActionsDefined event) {
+        displayBoard();
+
+        var availableActions = event.getActions();
+        int choice = 0;
+
+        if (availableActions.size() > 1) {
+            output.display("Choose your action:");
+            for (int i = 0; i < availableActions.size(); i++) {
+                output.display(i + ": " + availableActions.get(i));
+            }
+
+            choice = choiceMaker.getChoice(0, availableActions.size() - 1);
+        }
+
+        Actions chosenAction = availableActions.get(choice);
+
+        gameView.fireEvent(new ActionChosen(event.getTurn(), chosenAction));
+    }
+
+    private void displayBoard() {
         // Display board
         List<Zone> zones = zonesView.findAll()
                 .stream()
@@ -72,7 +112,7 @@ public final class ConsoleDisplayer {
                 .orElseThrow() + 1;
     }
 
-    String getStringRepresentation(Zone zone) {
+    private String getStringRepresentation(Zone zone) {
         Set<ActorId> actorIds = zonesView.findActorIdsOn(zone);
         boolean containsSurvivors = actorIds.stream()
                 .anyMatch(id -> actorsView.findSurvivorBy(id).isPresent());
@@ -91,21 +131,5 @@ public final class ConsoleDisplayer {
         } else {
             return "  ";
         }
-    }
-
-    @EventListener
-    public void handleAvailableActionsDefined(AvailableActionsDefined event) {
-        var availableActions = event.getActions();
-        int choice = 0;
-
-        if (availableActions.size() > 1) {
-            output.display("Choose your action:");
-            for (int i = 0; i < availableActions.size(); i++) {
-                output.display(i + ": " + availableActions.get(i));
-            }
-
-            choice = choiceMaker.getChoice(0, availableActions.size() - 1);
-        }
-        gameView.fireEvent(new ActionChosen(event.getTurn(), availableActions.get(choice)));
     }
 }

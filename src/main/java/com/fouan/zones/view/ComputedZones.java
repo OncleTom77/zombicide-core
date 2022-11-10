@@ -38,6 +38,13 @@ public final class ComputedZones {
         return Optional.ofNullable(zones.get(position));
     }
 
+    public Optional<ComputedZone> findByActorId(ActorId actorId) {
+        return zones.values()
+                .stream()
+                .filter(computedZone -> computedZone.actorIds.contains(actorId))
+                .findFirst();
+    }
+
     @Getter
     public static class ComputedZone {
         private final Zone zone;

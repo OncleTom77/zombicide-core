@@ -1,6 +1,7 @@
 package com.fouan.phases
 
 import com.fouan.actions.Actions
+import com.fouan.actors.ActorId
 import com.fouan.actors.Survivor
 import com.fouan.actors.view.ActorsView
 import com.fouan.events.AvailableActionsDefined
@@ -27,12 +28,11 @@ class SurvivorsPhase(
         // List survivors
         actorsView.allLivingSurvivors()
             .forEach {
-                startSurvivorTurn(it, turn)
+                startSurvivorTurn(it.id, turn)
 
                 while (actorsView.findRemainingActionsForSurvivor(it, turn) > 0) {
                     val possibleActions = getPossibleActions()
                     gameView.fireEvent(AvailableActionsDefined(turn, possibleActions))
-                    logger.info { "Event Fire" }
                 }
                 // Loop action count <= 3
                 // Actions chooser
@@ -58,8 +58,8 @@ class SurvivorsPhase(
         return Actions.values().toList();
     }
 
-    private fun startSurvivorTurn(survivor: Survivor, turn: Int) {
-        gameView.fireEvent(SurvivorsTurnStarted(turn, survivor))
+    private fun startSurvivorTurn(survivorId: ActorId, turn: Int) {
+        gameView.fireEvent(SurvivorsTurnStarted(turn, survivorId))
     }
 
     private fun endSurvivorTurn(survivor: Survivor, turn: Int) = gameView.fireEvent(SurvivorsTurnEnded(turn, survivor))

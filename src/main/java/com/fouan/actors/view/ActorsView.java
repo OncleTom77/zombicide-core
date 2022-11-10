@@ -113,12 +113,12 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                 .toList();
     }
 
-    public Optional<Survivor> findCurrentSurvivorForTurn(int turn) {
+    public Optional<ActorId> findCurrentSurvivorIdForTurn(int turn) {
         return history.stream()
                 .filter(actorEvent -> actorEvent instanceof SurvivorsTurnStarted)
                 .map(actorEvent -> (SurvivorsTurnStarted) actorEvent)
                 .filter(survivorsTurnStarted -> survivorsTurnStarted.getTurn() == turn)
-                .map(SurvivorsTurnStarted::getSurvivor)
+                .map(SurvivorsTurnStarted::getSurvivorId)
                 .reduce((first, second) -> second);
     }
 }

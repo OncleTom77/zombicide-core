@@ -16,7 +16,8 @@ public final class Game {
     private final Round round;
 
     public Game(GameView gameView,
-                @Named("initializationPhase") Phase initializePhase, Round round) {
+                @Named("initializationPhase") Phase initializePhase,
+                Round round) {
         this.gameView = gameView;
         this.initializePhase = initializePhase;
         this.round = round;

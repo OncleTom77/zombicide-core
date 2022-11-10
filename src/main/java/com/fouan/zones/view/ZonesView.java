@@ -1,10 +1,7 @@
 package com.fouan.zones.view;
 
 import com.fouan.actors.ActorId;
-import com.fouan.events.BoardInitialized;
-import com.fouan.events.SurvivorAdded;
-import com.fouan.events.ZombieSpawned;
-import com.fouan.events.ZoneEvent;
+import com.fouan.events.*;
 import com.fouan.zones.Zone;
 import com.fouan.zones.Zone.ZoneMarker;
 import org.springframework.context.event.EventListener;
@@ -53,6 +50,24 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
                     return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
                 }
         );
+    }
+
+    @EventListener
+    public void handleSurvivorMoved(SurvivorMoved event) {
+        ComputedZones.ComputedZone oldZone = zones.findByActorId(event.getActorId())
+                .orElseThrow();
+
+        zones.update(oldZone.getPosition(), computedZone -> {
+            List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
+            actorIds.remove(event.getActorId());
+            return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
+        });
+
+        zones.update(event.getPosition(), computedZone -> {
+            List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
+            actorIds.add(event.getActorId());
+            return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
+        });
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.fouan.events;
 
+import com.fouan.actors.ActorId;
 import com.fouan.actors.Survivor;
 import lombok.Getter;
 
@@ -8,10 +9,10 @@ public final class SurvivorsTurnStarted
         extends Event<SurvivorsTurnStarted>
         implements ActorEvent, GameEvent {
 
-    private final Survivor survivor;
+    private final ActorId survivorId;
 
-    public SurvivorsTurnStarted(int turn, Survivor survivor) {
+    public SurvivorsTurnStarted(int turn, ActorId survivorId) {
         super(turn);
-        this.survivor = survivor;
+        this.survivorId = survivorId;
     }
 }

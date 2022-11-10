@@ -1,10 +1,6 @@
 package com.fouan.actors;
 
-import com.fouan.events.SurvivorMoved;
-import com.fouan.events.ZombieLostLifePoints;
-import com.fouan.game.view.GameView;
 import com.fouan.weapons.Weapon;
-import com.fouan.zones.Zone;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -27,22 +23,6 @@ public final class Survivor extends Actor {
         this.dangerLevel = DangerLevel.fromExperience(experience);
         this.lifePoints = lifePoints;
         this.actionsCount = actionsCount;
-    }
-
-    @Override
-    public void moveTo(Zone zoneToMove, GameView gameView) {
-        gameView.fireEvent(
-            new SurvivorMoved(gameView.getCurrentTurn(), id, zoneToMove)
-        );
-    }
-
-    @Override
-    public void attack(ActorId actorId, GameView gameView) {
-        var damages = weapon.use(gameView.rollDice());
-
-        gameView.fireEvent(
-            new ZombieLostLifePoints(gameView.getCurrentTurn(), actorId, id, weapon, damages.hitCount())
-        );
     }
 
     public LifeStatus getLifeStatus() {
