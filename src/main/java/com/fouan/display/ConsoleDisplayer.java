@@ -13,8 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
 
 import javax.inject.Named;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Named
 @AllArgsConstructor
@@ -74,6 +73,24 @@ public final class ConsoleDisplayer {
         Actions chosenAction = availableActions.get(choice);
 
         gameView.fireEvent(new ActionChosen(event.getTurn(), chosenAction));
+    }
+
+    @EventListener
+    public void handleAvailableZombiesForSurvivorAttackDefined(AvailableZombiesForSurvivorAttackDefined event) {
+        var availableZombies = event.getZombies().stream().toList();
+
+        output.display("Choose your target:");
+        for (int i = 0; i < availableZombies.size(); i++) {
+            output.display(i + ": " + availableZombies.get(i));
+        }
+
+        Set<Integer> choices = choiceMaker.getChoices(0, availableZombies.size() - 1, event.getNumberOfZombiesToChoose());
+
+        var chosenZombies = choices.stream()
+                .map(availableZombies::get)
+                .toList();
+
+        gameView.fireEvent(new ZombiesChosen(event.getTurn(), chosenZombies));
     }
 
     private void displayBoard() {

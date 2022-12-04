@@ -12,10 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.event.EventListener;
 
 import javax.inject.Named;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -49,6 +47,8 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     public void handleZombieDied(ZombieDied event) {
         var zombie = findZombieBy(event.getZombieId())
                 .orElseThrow(() -> new IllegalStateException("Zombie (id: " + event.getZombieId().value() + ") not found"));
+
+        log.info("{} is dead", zombie);
 
         eventsPublisher.fire(
                 new SurvivorGainedExperience(event.getTurn(), event.getAttackerId(), zombie.getExperienceProvided())
@@ -93,6 +93,17 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     public Optional<ZombieWithZone> findZombieWithZoneBy(ActorId id) {
         return findZombieBy(id)
                 .map(zombie -> new ZombieWithZone(zombie, zonesQueries.findByActorId(id).orElse(null)));
+    }
+
+    @Override
+    public Set<Zombie> findAllZombiesOnSameZoneAsSurvivor(ActorId survivorId) {
+        SurvivorWithZone survivorWithZone = findSurvivorWithZoneBy(survivorId)
+                .orElseThrow();
+        return zonesQueries.findActorIdsOn(survivorWithZone.zone())
+                .stream()
+                .map(this::findZombieBy)
+                .flatMap(Optional::stream)
+                .collect(Collectors.toSet());
     }
 
     @Override

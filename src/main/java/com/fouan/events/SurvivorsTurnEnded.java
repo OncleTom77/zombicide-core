@@ -1,15 +1,19 @@
 package com.fouan.events;
 
-import com.fouan.actors.Survivor;
+import com.fouan.actors.ActorId;
 
 public final class SurvivorsTurnEnded
         extends Event<SurvivorsTurnEnded>
         implements GameEvent {
 
-    private final Survivor survivor;
+    private final ActorId survivorId;
 
-    public SurvivorsTurnEnded(int turn, Survivor survivor) {
+    public SurvivorsTurnEnded(int turn, ActorId survivorId) {
         super(turn);
-        this.survivor = survivor;
+        this.survivorId = survivorId;
+    }
+
+    public ActorId getActorId() {
+        return survivorId;
     }
 }

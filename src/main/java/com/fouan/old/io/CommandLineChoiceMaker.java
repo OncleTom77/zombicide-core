@@ -3,11 +3,11 @@ package com.fouan.old.io;
 import com.fouan.display.Output;
 
 import javax.inject.Named;
-import java.util.InputMismatchException;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static java.util.function.Predicate.not;
 
 @Named
 public class CommandLineChoiceMaker implements ChoiceMaker {
@@ -18,6 +18,20 @@ public class CommandLineChoiceMaker implements ChoiceMaker {
         this.output = output;
         scanner = new Scanner(System.in);
         scanner.useDelimiter("\\r?\\n|\\r");
+    }
+
+    @Override
+    public Set<Integer> getChoices(int min, int max, int nb) {
+        Set<Integer> result = new HashSet<>();
+
+        for (int i = 0; i < nb; i++) {
+            Set<Integer> choices = IntStream.range(min, max + 1)
+                    .boxed()
+                    .filter(not(result::contains))
+                    .collect(Collectors.toSet());
+            result.add(getChoice(choices));
+        }
+        return result;
     }
 
     @Override

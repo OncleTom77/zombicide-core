@@ -4,8 +4,8 @@ import com.fouan.weapons.Weapon;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter
-@EqualsAndHashCode(callSuper = true)
+import java.util.Objects;
+
 public final class Survivor extends Actor {
 
     private final String name;
@@ -27,6 +27,43 @@ public final class Survivor extends Actor {
 
     public LifeStatus getLifeStatus() {
         return lifePoints > 0 ? LifeStatus.ALIVE : LifeStatus.DEAD;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public Weapon getWeapon() {
+        return this.weapon;
+    }
+
+    public int getExperience() {
+        return this.experience;
+    }
+
+    public DangerLevel getDangerLevel() {
+        return this.dangerLevel;
+    }
+
+    public int getLifePoints() {
+        return this.lifePoints;
+    }
+
+    public int getActionsCount() {
+        return this.actionsCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Survivor survivor = (Survivor) o;
+        return experience == survivor.experience && lifePoints == survivor.lifePoints && actionsCount == survivor.actionsCount && Objects.equals(name, survivor.name) && Objects.equals(weapon, survivor.weapon) && dangerLevel == survivor.dangerLevel;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, weapon, experience, dangerLevel, lifePoints, actionsCount);
     }
 
     public enum LifeStatus {

@@ -1,14 +1,9 @@
 package com.fouan.weapons;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fouan.dice.DiceRoller;
 
 import java.util.stream.IntStream;
 
-import static lombok.AccessLevel.PROTECTED;
-
-@Getter
-@AllArgsConstructor(access = PROTECTED)
 public abstract class Weapon {
 
     protected final Range range;
@@ -16,9 +11,16 @@ public abstract class Weapon {
     protected final int accuracy;
     protected final int damage;
 
-    public AttackResult use(int diceResult) {
+    protected Weapon(Range range, int dice, int accuracy, int damage) {
+        this.range = range;
+        this.dice = dice;
+        this.accuracy = accuracy;
+        this.damage = damage;
+    }
+
+    public AttackResult use(DiceRoller diceRoller) {
         var rolls = IntStream.range(0, dice)
-                .map(value -> diceResult)
+                .map(value -> diceRoller.roll())
                 .boxed()
                 .toList();
 
@@ -27,5 +29,21 @@ public abstract class Weapon {
                 .count();
 
         return new AttackResult(this, Math.toIntExact(hitCount));
+    }
+
+    public Range getRange() {
+        return this.range;
+    }
+
+    public int getDice() {
+        return this.dice;
+    }
+
+    public int getAccuracy() {
+        return this.accuracy;
+    }
+
+    public int getDamage() {
+        return this.damage;
     }
 }

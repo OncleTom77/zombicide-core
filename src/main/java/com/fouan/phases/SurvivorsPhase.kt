@@ -15,8 +15,8 @@ import kotlin.math.log
 
 @Named
 class SurvivorsPhase(
-    private val gameView: GameView,
-    private val actorsView: ActorsView,
+        private val gameView: GameView,
+        private val actorsView: ActorsView,
 ) : Phase {
 
     private val logger = KotlinLogging.logger { }
@@ -27,20 +27,23 @@ class SurvivorsPhase(
 
         // List survivors
         actorsView.allLivingSurvivors()
-            .forEach {
-                startSurvivorTurn(it.id, turn)
+                .forEach {
+                    startSurvivorTurn(it.id, turn)
 
-                while (actorsView.findRemainingActionsForSurvivor(it, turn) > 0) {
-                    val possibleActions = getPossibleActions()
-                    gameView.fireEvent(AvailableActionsDefined(turn, possibleActions))
+                    while (!gameView.isTurnEnded(it.id)) {
+                        val possibleActions = getPossibleActions()
+                        gameView.fireEvent(AvailableActionsDefined(turn, possibleActions))
+
+                        if (actorsView.findRemainingActionsForSurvivor(it, turn) == 0) {
+                            endSurvivorTurn(it, turn)
+                        }
+                    }
+                    // Loop action count <= 3
+                    // Actions chooser
+                    // wait for player action choice
+                    // action.play()
+
                 }
-                // Loop action count <= 3
-                // Actions chooser
-                // wait for player action choice
-                // action.play()
-
-                endSurvivorTurn(it, turn)
-            }
         // foreach survivor start turn
         // 1 Define available actions
         // 2 Wait for selected action from displayer
@@ -54,7 +57,8 @@ class SurvivorsPhase(
         // 3 Execute action
     }
 
-    private fun getPossibleActions(): List<Actions>  {
+    private fun getPossibleActions(): List<Actions> {
+        // TODO: according context, return possible actions 
         return Actions.values().toList();
     }
 
@@ -62,5 +66,5 @@ class SurvivorsPhase(
         gameView.fireEvent(SurvivorsTurnStarted(turn, survivorId))
     }
 
-    private fun endSurvivorTurn(survivor: Survivor, turn: Int) = gameView.fireEvent(SurvivorsTurnEnded(turn, survivor))
+    private fun endSurvivorTurn(survivor: Survivor, turn: Int) = gameView.fireEvent(SurvivorsTurnEnded(turn, survivor.id))
 }

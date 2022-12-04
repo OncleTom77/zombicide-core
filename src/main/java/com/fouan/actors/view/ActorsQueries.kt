@@ -15,4 +15,5 @@ interface ActorsQueries {
     fun findZombieWithZoneBy(id: ActorId): Optional<ZombieWithZone>
     fun findZombiesWithZoneNearTo(zone: Zone): List<ZombieWithZone>
     fun findRemainingActionsForSurvivor(survivor: Survivor, turn: Int): Int
+    fun findAllZombiesOnSameZoneAsSurvivor(survivorId: ActorId): Set<Zombie>
 }

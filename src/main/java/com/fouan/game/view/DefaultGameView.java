@@ -1,11 +1,9 @@
 package com.fouan.game.view;
 
+import com.fouan.actors.ActorId;
 import com.fouan.actors.view.ActorsCommands;
 import com.fouan.dice.DiceRoller;
-import com.fouan.events.EndGameEvent;
-import com.fouan.events.Event;
-import com.fouan.events.EventsPublisher;
-import com.fouan.events.GameEvent;
+import com.fouan.events.*;
 import com.fouan.zones.view.ZonesCommands;
 import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -54,6 +52,15 @@ final class DefaultGameView implements GameView {
     @Override
     public int rollDice() {
         return diceRoller.roll();
+    }
+
+    @Override
+    public boolean isTurnEnded(ActorId actorId) {
+        int turn = getCurrentTurn();
+        return history.stream()
+                .filter(event -> event instanceof SurvivorsTurnEnded)
+                .map(event -> (SurvivorsTurnEnded) event)
+                .anyMatch(survivorsTurnEnded -> survivorsTurnEnded.getActorId().equals(actorId) && survivorsTurnEnded.getTurn() == turn);
     }
 
     @Override

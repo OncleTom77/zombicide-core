@@ -5,6 +5,6 @@ import com.fouan.actors.ActorId;
 public final class Abomination extends Zombie {
 
     public Abomination(ActorId id) {
-        super(id, "Abomination", 3, 5);
+        super(id, "Abomination", 3, 3, 5);
     }
 }
