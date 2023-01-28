@@ -28,7 +28,7 @@ public abstract class Weapon {
                 .filter(roll -> roll >= accuracy)
                 .count();
 
-        return new AttackResult(this, Math.toIntExact(hitCount));
+        return new AttackResult(this, rolls, Math.toIntExact(hitCount));
     }
 
     public Range getRange() {

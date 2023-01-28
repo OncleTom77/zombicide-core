@@ -14,7 +14,6 @@ import org.springframework.context.event.EventListener;
 import javax.inject.Named;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Named
@@ -49,6 +48,8 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                 .orElseThrow(() -> new IllegalStateException("Zombie (id: " + event.getZombieId().value() + ") not found"));
 
         log.info("{} is dead", zombie);
+        // TODO: 28/01/2023 Should we add methods in ActorsCommands to add/remove actors?
+        actors.remove(zombie);
 
         eventsPublisher.fire(
                 new SurvivorGainedExperience(event.getTurn(), event.getAttackerId(), zombie.getExperienceProvided())
@@ -69,11 +70,12 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     }
 
     @Override
-    public Stream<Survivor> allLivingSurvivors() {
+    public List<Survivor> allLivingSurvivors() {
         return actors.all()
                 .filter(actor -> actor instanceof Survivor)
                 .map(actor -> (Survivor) actor)
-                .filter(survivor -> survivor.getLifeStatus() == Survivor.LifeStatus.ALIVE);
+                .filter(survivor -> survivor.getLifeStatus() == Survivor.LifeStatus.ALIVE)
+                .toList();
     }
 
     @Override
@@ -124,6 +126,7 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                 .toList();
     }
 
+    @Override
     public Optional<ActorId> findCurrentSurvivorIdForTurn(int turn) {
         return history.stream()
                 .filter(actorEvent -> actorEvent instanceof SurvivorsTurnStarted)

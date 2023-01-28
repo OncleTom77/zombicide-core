@@ -20,6 +20,14 @@ public final class Actors {
         actors.put(actor.getId(), actor);
     }
 
+    public void remove(Actor actor) {
+        removeById(actor.getId());
+    }
+
+    public void removeById(ActorId actorId) {
+        actors.remove(actorId);
+    }
+
     public Optional<Actor> findById(ActorId actorId) {
         return Optional.ofNullable(actors.get(actorId));
     }

@@ -2,6 +2,7 @@ package com.fouan.display;
 
 import com.fouan.actions.Actions;
 import com.fouan.actors.ActorId;
+import com.fouan.actors.Survivor;
 import com.fouan.actors.view.ActorsView;
 import com.fouan.events.*;
 import com.fouan.game.view.GameView;
@@ -91,6 +92,14 @@ public final class ConsoleDisplayer {
                 .toList();
 
         gameView.fireEvent(new ZombiesChosen(event.getTurn(), chosenZombies));
+    }
+
+    @EventListener
+    public void handleSurvivorAttacked(SurvivorAttacked event) {
+        Survivor survivor = actorsView.findSurvivorBy(event.getActorId())
+                .orElseThrow();
+        output.display("Dice roll: " + event.getAttackResult().rolls());
+        output.display(survivor.getName() + " attacked with " + event.getAttackResult().weapon() + " and hits " + event.getAttackResult().hitCount() + " target(s)");
     }
 
     private void displayBoard() {
