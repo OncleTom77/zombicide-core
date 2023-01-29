@@ -1,11 +1,10 @@
 package com.fouan.phases
 
-import com.fouan.actions.Action
 import com.fouan.actions.Actions
 import com.fouan.actions.SurvivorAction
 import com.fouan.actors.ActorId
 import com.fouan.actors.Survivor
-import com.fouan.actors.view.ActorsView
+import com.fouan.actors.view.ActorsQueries
 import com.fouan.events.AvailableActionsDefined
 import com.fouan.events.SurvivorsTurnEnded
 import com.fouan.events.SurvivorsTurnStarted
@@ -16,7 +15,7 @@ import javax.inject.Named
 @Named
 class SurvivorsPhase(
     private val gameView: GameView,
-    private val actorsView: ActorsView,
+    private val actorsQueries: ActorsQueries,
     private val actions: List<SurvivorAction>
 ) : Phase {
 
@@ -27,7 +26,7 @@ class SurvivorsPhase(
         val turn = gameView.currentTurn + 1
 
         // List survivors
-        actorsView.allLivingSurvivors()
+        actorsQueries.allLivingSurvivors()
             .forEach {
                 startSurvivorTurn(it.id, turn)
 
@@ -35,7 +34,7 @@ class SurvivorsPhase(
                     val possibleActions = getPossibleActions()
                     gameView.fireEvent(AvailableActionsDefined(turn, possibleActions))
 
-                    if (actorsView.findRemainingActionsForSurvivor(it, turn) == 0) {
+                    if (actorsQueries.findRemainingActionsForSurvivor(it, turn) == 0) {
                         endSurvivorTurn(it, turn)
                     }
                 }

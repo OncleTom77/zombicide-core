@@ -3,13 +3,13 @@ package com.fouan.display;
 import com.fouan.actions.Actions;
 import com.fouan.actors.ActorId;
 import com.fouan.actors.Survivor;
-import com.fouan.actors.view.ActorsView;
+import com.fouan.actors.view.ActorsQueries;
 import com.fouan.events.*;
 import com.fouan.game.view.GameView;
 import com.fouan.old.io.ChoiceMaker;
 import com.fouan.zones.Position;
 import com.fouan.zones.Zone;
-import com.fouan.zones.view.ZonesView;
+import com.fouan.zones.view.ZonesQueries;
 import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
 
@@ -21,8 +21,8 @@ import java.util.*;
 public final class ConsoleDisplayer {
 
     private final Output output;
-    private final ZonesView zonesView;
-    private final ActorsView actorsView;
+    private final ZonesQueries zonesQueries;
+    private final ActorsQueries actorsQueries;
     private final GameView gameView;
     private final ChoiceMaker choiceMaker;
 
@@ -96,7 +96,7 @@ public final class ConsoleDisplayer {
 
     @EventListener
     public void handleSurvivorAttacked(SurvivorAttacked event) {
-        Survivor survivor = actorsView.findSurvivorBy(event.getActorId())
+        Survivor survivor = actorsQueries.findSurvivorBy(event.getActorId())
                 .orElseThrow();
         output.display("Dice roll: " + event.getAttackResult().rolls());
         output.display(survivor.getName() + " attacked with " + event.getAttackResult().weapon() + " and hits " + event.getAttackResult().hitCount() + " target(s)");
@@ -104,7 +104,7 @@ public final class ConsoleDisplayer {
 
     private void displayBoard() {
         // Display board
-        List<Zone> zones = zonesView.findAll()
+        List<Zone> zones = zonesQueries.findAll()
                 .stream()
                 .sorted(Zone.ZONE_POSITION_COMPARATOR)
                 .toList();
@@ -139,11 +139,11 @@ public final class ConsoleDisplayer {
     }
 
     private String getStringRepresentation(Zone zone) {
-        Set<ActorId> actorIds = zonesView.findActorIdsOn(zone);
+        Set<ActorId> actorIds = zonesQueries.findActorIdsOn(zone);
         boolean containsSurvivors = actorIds.stream()
-                .anyMatch(id -> actorsView.findSurvivorBy(id).isPresent());
+                .anyMatch(id -> actorsQueries.findSurvivorBy(id).isPresent());
         boolean containsZombies = actorIds.stream()
-                .anyMatch(id -> actorsView.findZombieBy(id).isPresent());
+                .anyMatch(id -> actorsQueries.findZombieBy(id).isPresent());
         if (containsSurvivors) {
             return "Su";
         } else if (containsZombies) {

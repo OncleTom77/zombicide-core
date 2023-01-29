@@ -12,14 +12,14 @@ import com.fouan.weapons.Axe
 import com.fouan.zones.Position
 import com.fouan.zones.Zone
 import com.fouan.zones.view.Connection
-import com.fouan.zones.view.ZonesView
+import com.fouan.zones.view.ZonesQueries
 import java.util.*
 import javax.inject.Named
 
 @Named("initializationPhase")
 internal class InitializationPhase(
     private val gameView: GameView,
-    private val zonesView: ZonesView
+    private val zonesQueries: ZonesQueries
 ) : Phase {
 
     private val width: Int = 9
@@ -58,13 +58,13 @@ internal class InitializationPhase(
         val asim = Survivor(ActorId("Asim"), 3, "Asim", Axe(), 0, 3)
         val berin = Survivor(ActorId("Berin"), 3, "Berin", Axe(), 0, 3)
 
-        val startingZone = zonesView.findByMarker(Zone.ZoneMarker.STARTING_ZONE)[0]
+        val startingZone = zonesQueries.findByMarker(Zone.ZoneMarker.STARTING_ZONE)[0]
         gameView.fireEvent(SurvivorAdded(gameView.currentTurn, asim, startingZone))
         gameView.fireEvent(SurvivorAdded(gameView.currentTurn, berin, startingZone))
     }
 
     private fun initializeZombies() {
-        val zombieSpawnZone = zonesView.findByMarker(Zone.ZoneMarker.ZOMBIE_SPAWN)[0]
+        val zombieSpawnZone = zonesQueries.findByMarker(Zone.ZoneMarker.ZOMBIE_SPAWN)[0]
         gameView.fireEvent(ZombieSpawned(gameView.currentTurn, Walker(ActorId("1")), zombieSpawnZone))
         gameView.fireEvent(ZombieSpawned(gameView.currentTurn, Walker(ActorId("2")), zombieSpawnZone))
     }
