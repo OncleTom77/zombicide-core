@@ -2,6 +2,7 @@ package com.fouan.zones.view;
 
 import com.fouan.actors.ActorId;
 import com.fouan.events.*;
+import com.fouan.zones.Position;
 import com.fouan.zones.Zone;
 import com.fouan.zones.Zone.ZoneMarker;
 import org.springframework.context.event.EventListener;
@@ -102,10 +103,10 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
     }
 
     @Override
-    public Set<ActorId> findActorIdsOn(Zone zone) {
+    public Set<ActorId> findActorIdsOn(Position position) {
         return zones.all()
                 .stream()
-                .filter(computedZone -> computedZone.getZone().getPosition().equals(zone.getPosition()))
+                .filter(computedZone -> computedZone.getZone().getPosition().equals(position))
                 .map(ComputedZones.ComputedZone::getActorIds)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());

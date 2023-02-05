@@ -19,6 +19,7 @@ class Round(
             survivorsPhase.play()
             zombiesPhase.play()
             logger.info { "End round" }
+            break
         }
     }
 }

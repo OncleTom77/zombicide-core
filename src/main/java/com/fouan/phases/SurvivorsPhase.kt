@@ -49,8 +49,6 @@ class SurvivorsPhase(
         // 2 Wait for selected action from displayer
         // 3 Execute action
 
-        System.exit(0)
-
         // Foreach survivor
         // 1 Define available actions
         // 2 Wait for selected action from displayer

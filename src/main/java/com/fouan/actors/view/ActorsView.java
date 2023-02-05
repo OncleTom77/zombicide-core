@@ -1,5 +1,6 @@
 package com.fouan.actors.view;
 
+import com.fouan.actors.Actor;
 import com.fouan.actors.ActorId;
 import com.fouan.actors.Survivor;
 import com.fouan.actors.zombies.Zombie;
@@ -62,6 +63,12 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     }
 
     @Override
+    public Actor findActorBy(ActorId id) {
+        return actors.findById(id)
+                .orElseThrow();
+    }
+
+    @Override
     public Optional<Survivor> findSurvivorBy(ActorId id) {
         return actors.findById(id)
                 .filter(actor -> actor instanceof Survivor)
@@ -79,12 +86,6 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     }
 
     @Override
-    public Optional<SurvivorWithZone> findSurvivorWithZoneBy(ActorId id) {
-        return findSurvivorBy(id)
-                .map(survivor -> new SurvivorWithZone(survivor, zonesQueries.findByActorId(id).orElse(null)));
-    }
-
-    @Override
     public Optional<Zombie> findZombieBy(ActorId id) {
         return actors.findById(id)
                 .filter(actor -> actor instanceof Zombie)
@@ -99,18 +100,13 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
 
     @Override
     public Set<Zombie> findAllZombiesOnSameZoneAsSurvivor(ActorId survivorId) {
-        SurvivorWithZone survivorWithZone = findSurvivorWithZoneBy(survivorId)
+        Zone survivorZone = zonesQueries.findByActorId(survivorId)
                 .orElseThrow();
-        return zonesQueries.findActorIdsOn(survivorWithZone.zone())
+        return zonesQueries.findActorIdsOn(survivorZone.getPosition())
                 .stream()
                 .map(this::findZombieBy)
                 .flatMap(Optional::stream)
                 .collect(Collectors.toSet());
-    }
-
-    @Override
-    public List<ZombieWithZone> findZombiesWithZoneNearTo(Zone zone) {
-        return Collections.emptyList();
     }
 
     @Override
@@ -134,5 +130,27 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                 .filter(survivorsTurnStarted -> survivorsTurnStarted.getTurn() == turn)
                 .map(SurvivorsTurnStarted::getSurvivorId)
                 .reduce((first, second) -> second);
+    }
+
+    @Override
+    public boolean allZombieActionsSpent() {
+        // TODO: 05/02/2023 check zombies and events for the current turn and return true if all zombies have played all their actions
+        return true;
+    }
+
+    @Override
+    public List<Zombie> findAttackingZombies() {
+        return actors.all()
+                .filter(actor -> actor instanceof Zombie)
+                .map(actor -> (Zombie) actor)
+                .filter(zombie -> {
+                    Zone zombieZone = zonesQueries.findByActorId(zombie.getId())
+                            .orElseThrow();
+                    return zonesQueries.findActorIdsOn(zombieZone.getPosition())
+                            .stream()
+                            .map(this::findSurvivorBy)
+                            .anyMatch(Optional::isPresent);
+                })
+                .toList();
     }
 }

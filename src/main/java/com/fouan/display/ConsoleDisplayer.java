@@ -139,7 +139,7 @@ public final class ConsoleDisplayer {
     }
 
     private String getStringRepresentation(Zone zone) {
-        Set<ActorId> actorIds = zonesQueries.findActorIdsOn(zone);
+        Set<ActorId> actorIds = zonesQueries.findActorIdsOn(zone.getPosition());
         boolean containsSurvivors = actorIds.stream()
                 .anyMatch(id -> actorsQueries.findSurvivorBy(id).isPresent());
         boolean containsZombies = actorIds.stream()

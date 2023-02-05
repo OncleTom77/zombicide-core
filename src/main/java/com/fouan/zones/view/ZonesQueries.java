@@ -1,6 +1,7 @@
 package com.fouan.zones.view;
 
 import com.fouan.actors.ActorId;
+import com.fouan.zones.Position;
 import com.fouan.zones.Zone;
 import com.fouan.zones.Zone.ZoneMarker;
 
@@ -16,7 +17,7 @@ public interface ZonesQueries {
 
     List<Zone> findByMarker(ZoneMarker marker);
 
-    Set<ActorId> findActorIdsOn(Zone zone);
+    Set<ActorId> findActorIdsOn(Position position);
 
     List<Zone> findConnectedZones(Zone zone);
 }
