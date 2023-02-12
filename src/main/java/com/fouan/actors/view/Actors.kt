@@ -3,8 +3,8 @@ package com.fouan.actors.view
 import com.fouan.actors.Actor
 import com.fouan.actors.ActorId
 import java.util.*
+import java.util.function.UnaryOperator
 import java.util.stream.Stream
-import kotlin.collections.HashMap
 
 class Actors {
     private val actors: MutableMap<ActorId, Actor> = HashMap()
@@ -29,9 +29,10 @@ class Actors {
         return actors.values.stream()
     }
 
-/*public void update(ActorId actorId, UnaryOperator<Actor> updater) {
-        findById(actorId)
-            .map(computedActor -> updater.apply(computedActor.actor))
-            .ifPresent(actor -> actors.put(actorId, new ComputedActor(actor)));
-    }*/
+    fun update(actorId: ActorId, updater: UnaryOperator<Actor>) {
+        val updatedActor = findById(actorId)
+            .map { updater.apply(it) }
+            .orElseThrow()
+        actors[actorId] = updatedActor
+    }
 }

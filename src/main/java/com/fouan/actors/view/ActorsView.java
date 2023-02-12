@@ -57,6 +57,19 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
         );
     }
 
+    @EventListener
+    public void handleSurvivorLostLifePoints(SurvivorLostLifePoints event) {
+        actors.update(event.getSurvivorId(), actor -> {
+            Survivor survivor = (Survivor) actor;
+            return new Survivor(actor.getId(),
+                    survivor.getLifePoints() - event.getDamage(),
+                    survivor.getName(),
+                    survivor.getWeapon(),
+                    survivor.getExperience(),
+                    survivor.getActionsCount());
+        });
+    }
+
     @Override
     public void clear() {
         history.clear();

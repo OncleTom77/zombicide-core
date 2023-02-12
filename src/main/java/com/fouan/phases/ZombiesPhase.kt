@@ -4,11 +4,15 @@ import com.fouan.actors.Actor
 import com.fouan.actors.Survivor
 import com.fouan.actors.view.ActorsQueries
 import com.fouan.actors.zombies.Zombie
+import com.fouan.events.SurvivorLostLifePoints
+import com.fouan.events.ZombieAttacksDistributed
+import com.fouan.events.ZombiesAttackingSurvivorsDefined
 import com.fouan.events.ZombiesTurnEnded
 import com.fouan.events.ZombiesTurnStarted
 import com.fouan.game.view.GameView
 import com.fouan.zones.Zone
 import com.fouan.zones.view.ZonesQueries
+import org.springframework.context.event.EventListener
 import javax.inject.Named
 
 @Named
@@ -53,7 +57,16 @@ class ZombiesPhase(
         val survivors = actors[Survivor::class.java]!!
         val zombies = actors[Zombie::class.java]!!
 
-        // TODO: ask player which survivor should be the target of the attacks
+        gameView.fireEvent(ZombiesAttackingSurvivorsDefined(gameView.currentTurn, zone.position, zombies.map { it.id }, survivors.map { it.id }))
+    }
+
+    @EventListener
+    fun handleZombieAttacksDistributed(event: ZombieAttacksDistributed) {
+        event.distribution.forEach {
+            it.value.forEach { zombie ->
+                gameView.fireEvent(SurvivorLostLifePoints(event.turn, it.key.id, zombie.id, zombie.damage))
+            }
+        }
     }
 
     private fun spawnStep() {

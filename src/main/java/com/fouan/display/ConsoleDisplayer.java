@@ -4,9 +4,11 @@ import com.fouan.actions.Actions;
 import com.fouan.actors.ActorId;
 import com.fouan.actors.Survivor;
 import com.fouan.actors.view.ActorsQueries;
+import com.fouan.actors.zombies.Zombie;
 import com.fouan.events.*;
 import com.fouan.game.view.GameView;
 import com.fouan.old.io.ChoiceMaker;
+import com.fouan.util.ListUtilKt;
 import com.fouan.zones.Position;
 import com.fouan.zones.Zone;
 import com.fouan.zones.view.ZonesQueries;
@@ -15,6 +17,7 @@ import org.springframework.context.event.EventListener;
 
 import javax.inject.Named;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Named
 @AllArgsConstructor
@@ -25,6 +28,7 @@ public final class ConsoleDisplayer {
     private final ActorsQueries actorsQueries;
     private final GameView gameView;
     private final ChoiceMaker choiceMaker;
+    private final ActorSelection actorSelection;
 
     @EventListener
     public void handleSurvivorAdded(SurvivorAdded event) {
@@ -80,16 +84,8 @@ public final class ConsoleDisplayer {
     public void handleAvailableZombiesForSurvivorAttackDefined(AvailableZombiesForSurvivorAttackDefined event) {
         var availableZombies = event.getZombies().stream().toList();
 
-        output.display("Choose your target:");
-        for (int i = 0; i < availableZombies.size(); i++) {
-            output.display(i + ": " + availableZombies.get(i));
-        }
-
-        Set<Integer> choices = choiceMaker.getChoices(0, availableZombies.size() - 1, event.getNumberOfZombiesToChoose());
-
-        var chosenZombies = choices.stream()
-                .map(availableZombies::get)
-                .toList();
+        output.display("Choose your target!");
+        var chosenZombies = actorSelection.select(availableZombies, event.getNumberOfZombiesToChoose());
 
         gameView.fireEvent(new ZombiesChosen(event.getTurn(), chosenZombies));
     }
@@ -100,6 +96,37 @@ public final class ConsoleDisplayer {
                 .orElseThrow();
         output.display("Dice roll: " + event.getAttackResult().rolls());
         output.display(survivor.getName() + " attacked with " + event.getAttackResult().weapon() + " and hits " + event.getAttackResult().hitCount() + " target(s)");
+    }
+
+    @EventListener
+    public void handleZombiesAttackingSurvivorsDefined(ZombiesAttackingSurvivorsDefined event) {
+        List<Zombie> zombies = event.getZombieIds()
+                .stream()
+                .map(actorsQueries::findZombieBy)
+                .map(Optional::orElseThrow)
+                .toList();
+        List<Survivor> survivors = event.getSurvivorIds()
+                .stream()
+                .map(actorsQueries::findSurvivorBy)
+                .map(Optional::orElseThrow)
+                .toList();
+
+        String survivorNames = survivors.stream()
+                .map(Survivor::getName)
+                .collect(Collectors.joining(", "));
+        output.display(zombies.size() + " zombie(s) are attacking " + survivorNames + " on zone at position " + event.getPosition());
+
+        Map<Survivor, List<Zombie>> attackDistribution = new HashMap<>();
+
+        zombies.forEach(zombie -> {
+            output.display("Choose a target for the attack of " + zombie);
+            output.display("Actual attack distribution: " + attackDistribution);
+
+            Survivor selectedSurvivor = actorSelection.select(survivors);
+            attackDistribution.merge(selectedSurvivor, List.of(zombie), ListUtilKt::mergeLists);
+        });
+
+        gameView.fireEvent(new ZombieAttacksDistributed(event.getTurn(), attackDistribution));
     }
 
     private void displayBoard() {
