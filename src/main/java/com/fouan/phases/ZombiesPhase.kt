@@ -4,16 +4,13 @@ import com.fouan.actors.Actor
 import com.fouan.actors.Survivor
 import com.fouan.actors.view.ActorsQueries
 import com.fouan.actors.zombies.Zombie
-import com.fouan.events.SurvivorLostLifePoints
-import com.fouan.events.ZombieAttacksDistributed
-import com.fouan.events.ZombiesAttackingSurvivorsDefined
-import com.fouan.events.ZombiesTurnEnded
-import com.fouan.events.ZombiesTurnStarted
+import com.fouan.events.*
 import com.fouan.game.view.GameView
 import com.fouan.zones.Zone
 import com.fouan.zones.view.ZonesQueries
 import org.springframework.context.event.EventListener
 import javax.inject.Named
+import kotlin.reflect.KClass
 
 @Named
 class ZombiesPhase(
@@ -32,32 +29,57 @@ class ZombiesPhase(
     }
 
     private fun activationStep() {
-        while (!actorsQueries.allZombieActionsSpent()) {
-            // find Zombies that can attack survivors
-            val attackingZombies = actorsQueries.findAttackingZombies()
+        do {
+            var zombiePlayed = false
             zonesQueries.findAll()
                 .forEach { zone ->
-                    val actors: Map<Class<out Actor>, List<Actor>> = zonesQueries.findActorIdsOn(zone.position)
+                    val actors: Map<KClass<out Actor>, List<Actor>> = zonesQueries.findActorIdsOn(zone.position)
                         .map { actorsQueries.findActorBy(it) }
-                        .groupBy { it.javaClass }
+                        .groupBy { actor ->
+                            when (actor) {
+                                is Zombie -> return@groupBy Zombie::class
+                                is Survivor -> return@groupBy Survivor::class
+                                else -> throw IllegalStateException()
+                            }
+                        }
 
-                    if (actors.containsKey(Survivor::class.java)
-                        && actors.containsKey(Zombie::class.java)) {
-                        handleZombieAttack(zone, actors)
+                    if (actors.containsKey(Zombie::class)) {
+                        val zombiesWithRemaingActions = actors[Zombie::class]!!
+                            .filter { actorsQueries.getRemainingActionsCountForActor(it.id, gameView.currentTurn) > 0 }
+
+                        if (zombiesWithRemaingActions.isNotEmpty()) {
+                            if (actors.containsKey(Survivor::class)) {
+                                val survivors = actors[Survivor::class]!!
+                                handleZombieAttack(zone, zombiesWithRemaingActions, survivors)
+                            } else {
+                                handleZombieMove(zone, zombiesWithRemaingActions)
+                            }
+                            zombiePlayed = true
+                        }
                     }
                 }
-
-            //  - play Zombies, zone by zone, attacking altogether the survivors
-            //      - ask player which survivor should be the target of the attacks
-            // find remaining zombies and move them toward the noisiest zones
-        }
+        } while (zombiePlayed)
     }
 
-    private fun handleZombieAttack(zone: Zone, actors: Map<Class<out Actor>, List<Actor>>) {
-        val survivors = actors[Survivor::class.java]!!
-        val zombies = actors[Zombie::class.java]!!
+    private fun handleZombieAttack(
+        zone: Zone,
+        zombies: List<Actor>,
+        survivors: List<Actor>
+    ) {
+        zombies.forEach { gameView.fireEvent(ZombieAttacked(gameView.currentTurn, it.id)) }
 
-        gameView.fireEvent(ZombiesAttackingSurvivorsDefined(gameView.currentTurn, zone.position, zombies.map { it.id }, survivors.map { it.id }))
+        gameView.fireEvent(
+            AvailableSurvivorsForZombiesAttackDefined(
+                gameView.currentTurn,
+                zone.position,
+                zombies.map { it.id },
+                survivors.map { it.id }
+            )
+        )
+    }
+
+    private fun handleZombieMove(zone: Zone, zombies: List<Actor>) {
+
     }
 
     @EventListener

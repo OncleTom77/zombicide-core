@@ -11,10 +11,10 @@ interface ActorsQueries {
     fun allLivingSurvivors(): MutableList<Survivor>
     fun findZombieBy(id: ActorId): Optional<Zombie>
     fun findZombieWithZoneBy(id: ActorId): Optional<ZombieWithZone>
-    fun findRemainingActionsForSurvivor(survivor: Survivor, turn: Int): Int
+    fun getRemainingActionsCountForActor(survivor: ActorId, turn: Int): Int
     fun findAllZombiesOnSameZoneAsSurvivor(survivorId: ActorId): Set<Zombie>
     fun findCurrentSurvivorIdForTurn(turn: Int): Optional<ActorId>
-    fun allZombieActionsSpent(): Boolean
+    fun findZombieIdsWithRemainingActions(turn: Int): List<ActorId>
     fun findAttackingZombies(): MutableList<Zombie>
     fun findActorBy(id: ActorId): Actor
 }

@@ -99,7 +99,7 @@ public final class ConsoleDisplayer {
     }
 
     @EventListener
-    public void handleZombiesAttackingSurvivorsDefined(ZombiesAttackingSurvivorsDefined event) {
+    public void handleZombiesAttackingSurvivorsDefined(AvailableSurvivorsForZombiesAttackDefined event) {
         List<Zombie> zombies = event.getZombieIds()
                 .stream()
                 .map(actorsQueries::findZombieBy)

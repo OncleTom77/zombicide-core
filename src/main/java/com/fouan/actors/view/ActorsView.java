@@ -61,8 +61,14 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     public void handleSurvivorLostLifePoints(SurvivorLostLifePoints event) {
         actors.update(event.getSurvivorId(), actor -> {
             Survivor survivor = (Survivor) actor;
+            int remainingLifePoints = survivor.getLifePoints() - event.getDamage();
+
+            if (remainingLifePoints <= 0) {
+                eventsPublisher.fire(new SurvivorDied(event.getTurn(), event.getSurvivorId()));
+            }
+
             return new Survivor(actor.getId(),
-                    survivor.getLifePoints() - event.getDamage(),
+                    remainingLifePoints,
                     survivor.getName(),
                     survivor.getWeapon(),
                     survivor.getExperience(),
@@ -105,6 +111,14 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                 .map(actor -> (Zombie) actor);
     }
 
+    @NotNull
+    private List<Zombie> findAllZombies() {
+        return actors.all()
+                .filter(actor -> actor instanceof Zombie)
+                .map(actor -> (Zombie) actor)
+                .toList();
+    }
+
     @Override
     public Optional<ZombieWithZone> findZombieWithZoneBy(ActorId id) {
         return findZombieBy(id)
@@ -123,11 +137,13 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     }
 
     @Override
-    public int findRemainingActionsForSurvivor(@NotNull Survivor survivor, int turn) {
-        return survivor.getActionsCount() - findEventForActorIdAndTurn(survivor.getId(), turn).size();
+    public int getRemainingActionsCountForActor(@NotNull ActorId actorId, int turn) {
+        int actionsCount = findActorBy(actorId).getActionsCount();
+        int spentActionsCount = findActionEventForActorIdAndTurn(actorId, turn).size();
+        return actionsCount - spentActionsCount;
     }
 
-    private List<ActionEvent> findEventForActorIdAndTurn(ActorId actorId, int turn) {
+    private List<ActionEvent> findActionEventForActorIdAndTurn(ActorId actorId, int turn) {
         return history.stream()
                 .filter(event -> event instanceof ActionEvent)
                 .map(event -> (ActionEvent) event)
@@ -145,17 +161,17 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                 .reduce((first, second) -> second);
     }
 
-    @Override
-    public boolean allZombieActionsSpent() {
-        // TODO: 05/02/2023 check zombies and events for the current turn and return true if all zombies have played all their actions
-        return true;
+    public List<ActorId> findZombieIdsWithRemainingActions(int turn) {
+        return findAllZombies().stream()
+                .filter(zombie -> findActionEventForActorIdAndTurn(zombie.getId(), turn).size() < zombie.getActionsCount())
+                .map(Actor::getId)
+                .toList();
     }
 
     @Override
     public List<Zombie> findAttackingZombies() {
-        return actors.all()
-                .filter(actor -> actor instanceof Zombie)
-                .map(actor -> (Zombie) actor)
+        return findAllZombies()
+                .stream()
                 .filter(zombie -> {
                     Zone zombieZone = zonesQueries.findByActorId(zombie.getId())
                             .orElseThrow();

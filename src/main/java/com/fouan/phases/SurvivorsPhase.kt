@@ -34,7 +34,7 @@ class SurvivorsPhase(
                     val possibleActions = getPossibleActions()
                     gameView.fireEvent(AvailableActionsDefined(turn, possibleActions))
 
-                    if (actorsQueries.findRemainingActionsForSurvivor(it, turn) == 0) {
+                    if (actorsQueries.getRemainingActionsCountForActor(it.id, turn) == 0) {
                         endSurvivorTurn(it, turn)
                     }
                 }

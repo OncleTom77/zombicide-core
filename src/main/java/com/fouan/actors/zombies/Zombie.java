@@ -10,8 +10,8 @@ public abstract class Zombie extends Actor {
     protected final int minDamageToDestroy;
     protected final int experienceProvided;
 
-    protected Zombie(ActorId id, String name, int damage, int minDamageToDestroy, int experienceProvided) {
-        super(id);
+    protected Zombie(ActorId id, String name, int damage, int minDamageToDestroy, int experienceProvided, int actionsCount) {
+        super(id, actionsCount);
         this.name = name;
         this.damage = damage;
         this.minDamageToDestroy = minDamageToDestroy;

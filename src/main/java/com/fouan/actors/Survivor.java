@@ -13,16 +13,14 @@ public final class Survivor extends Actor {
     private final int experience;
     private final DangerLevel dangerLevel;
     private final int lifePoints;
-    private final int actionsCount;
 
     public Survivor(ActorId id, int lifePoints, String name, Weapon weapon, int experience, int actionsCount) {
-        super(id);
+        super(id, actionsCount);
         this.name = name;
         this.weapon = weapon;
         this.experience = experience;
         this.dangerLevel = DangerLevel.fromExperience(experience);
         this.lifePoints = lifePoints;
-        this.actionsCount = actionsCount;
     }
 
     public LifeStatus getLifeStatus() {
@@ -49,21 +47,25 @@ public final class Survivor extends Actor {
         return this.lifePoints;
     }
 
-    public int getActionsCount() {
-        return this.actionsCount;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Survivor survivor = (Survivor) o;
-        return experience == survivor.experience && lifePoints == survivor.lifePoints && actionsCount == survivor.actionsCount && Objects.equals(name, survivor.name) && Objects.equals(weapon, survivor.weapon) && dangerLevel == survivor.dangerLevel;
+        return experience == survivor.experience && lifePoints == survivor.lifePoints && Objects.equals(name, survivor.name) && Objects.equals(weapon, survivor.weapon) && dangerLevel == survivor.dangerLevel;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, weapon, experience, dangerLevel, lifePoints, actionsCount);
+        return Objects.hash(name, weapon, experience, dangerLevel, lifePoints);
+    }
+
+    @Override
+    public String toString() {
+        return "Survivor{" +
+                "name='" + name + '\'' +
+                ", lifePoints=" + lifePoints +
+                '}';
     }
 
     public enum LifeStatus {

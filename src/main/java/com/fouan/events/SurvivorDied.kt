@@ -1,17 +1,5 @@
-package com.fouan.events;
+package com.fouan.events
 
-import com.fouan.actors.ActorId;
-import lombok.Getter;
+import com.fouan.actors.ActorId
 
-@Getter
-public final class SurvivorDied
-        extends Event<SurvivorDied>
-        implements ActorEvent {
-
-    private final ActorId survivorId;
-
-    public SurvivorDied(int turn, ActorId survivorId) {
-        super(turn);
-        this.survivorId = survivorId;
-    }
-}
+class SurvivorDied(turn: Int, val survivorId: ActorId) : Event<SurvivorDied>(turn), ActorEvent

@@ -59,14 +59,30 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
                 .orElseThrow();
 
         zones.update(oldZone.getPosition(), computedZone -> {
-            List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
-            actorIds.remove(event.getActorId());
+            List<ActorId> actorIds = computedZone.getActorIds()
+                    .stream()
+                    .filter(actorId -> !actorId.equals(event.getActorId()))
+                    .toList();
             return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
         });
 
         zones.update(event.getPosition(), computedZone -> {
             List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
             actorIds.add(event.getActorId());
+            return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
+        });
+    }
+
+    @EventListener
+    public void handleSurvivorDied(SurvivorDied event) {
+        ComputedZones.ComputedZone oldZone = zones.findByActorId(event.getSurvivorId())
+                .orElseThrow();
+
+        zones.update(oldZone.getPosition(), computedZone -> {
+            List<ActorId> actorIds = computedZone.getActorIds()
+                    .stream()
+                    .filter(actorId -> !actorId.equals(event.getSurvivorId()))
+                    .toList();
             return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
         });
     }
