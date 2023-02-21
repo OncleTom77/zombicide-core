@@ -1,6 +1,7 @@
 package com.fouan.zones.view;
 
 import com.fouan.actors.ActorId;
+import com.fouan.actors.view.ActorsQueries;
 import com.fouan.events.*;
 import com.fouan.zones.Position;
 import com.fouan.zones.Zone;
@@ -18,6 +19,12 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
     private final Deque<ZoneEvent> history = new LinkedList<>();
     private final ComputedZones zones = new ComputedZones();
     private final ComputedConnections connections = new ComputedConnections();
+
+    private final ActorsQueries actorsQueries;
+
+    public ZonesView(ActorsQueries actorsQueries) {
+        this.actorsQueries = actorsQueries;
+    }
 
     @EventListener
     public void handleZoneEvent(ZoneEvent event) {
@@ -136,5 +143,42 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
                 .filter(connectedZone -> !connectedZone.equals(zone))
                 .distinct()
                 .toList();
+    }
+
+    @Override
+    public List<Zone> findNoisiestZones(boolean withSurvivor) {
+        List<ZoneWithNoise> zoneWithNoises = zones.all()
+                .stream()
+                .map(computedZone -> {
+                    long noise = getNoiseForZone(computedZone, withSurvivor);
+                    return new ZoneWithNoise(computedZone.getZone(), noise);
+                })
+                .toList();
+
+        long maxNoise = zoneWithNoises.stream()
+                .mapToLong(ZoneWithNoise::noise)
+                .max()
+                .orElseThrow();
+
+        return zoneWithNoises.stream()
+                .filter(zoneWithNoise -> zoneWithNoise.noise == maxNoise)
+                .map(ZoneWithNoise::zone)
+                .toList();
+    }
+
+    private long getNoiseForZone(ComputedZones.ComputedZone computedZone, boolean withSurvivor) {
+        long survivorCount = computedZone.getActorIds()
+                .stream()
+                .map(actorsQueries::findSurvivorBy)
+                .filter(Optional::isPresent)
+                .count();
+
+        if (withSurvivor && survivorCount == 0) {
+            return 0;
+        }
+        return survivorCount + computedZone.getNoiseTokens();
+    }
+
+    record ZoneWithNoise(Zone zone, long noise) {
     }
 }

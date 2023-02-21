@@ -50,6 +50,7 @@ public final class ComputedZones {
         private final Zone zone;
 
         private final List<ActorId> actorIds;
+        private final int noiseTokens = 0;
 
         public ComputedZone(Zone zone) {
             this(zone, Collections.emptyList());

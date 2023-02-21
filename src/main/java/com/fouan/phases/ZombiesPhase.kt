@@ -6,6 +6,7 @@ import com.fouan.actors.view.ActorsQueries
 import com.fouan.actors.zombies.Zombie
 import com.fouan.events.*
 import com.fouan.game.view.GameView
+import com.fouan.old.board.ZoneUtils
 import com.fouan.zones.Zone
 import com.fouan.zones.view.ZonesQueries
 import org.springframework.context.event.EventListener
@@ -29,10 +30,14 @@ class ZombiesPhase(
     }
 
     private fun activationStep() {
+        val defaultNoisiestZones = zonesQueries.findNoisiestZones()
+
         do {
             var zombiePlayed = false
             zonesQueries.findAll()
                 .forEach { zone ->
+                    // TODO: game can be lost here, do not try to activate more zombies (listen to end game event and check here if the game is lost before doing anything else)
+
                     val actors: Map<KClass<out Actor>, List<Actor>> = zonesQueries.findActorIdsOn(zone.position)
                         .map { actorsQueries.findActorBy(it) }
                         .groupBy { actor ->
@@ -52,7 +57,7 @@ class ZombiesPhase(
                                 val survivors = actors[Survivor::class]!!
                                 handleZombieAttack(zone, zombiesWithRemaingActions, survivors)
                             } else {
-                                handleZombieMove(zone, zombiesWithRemaingActions)
+                                handleZombieMove(zone, zombiesWithRemaingActions, defaultNoisiestZones)
                             }
                             zombiePlayed = true
                         }
@@ -78,8 +83,8 @@ class ZombiesPhase(
         )
     }
 
-    private fun handleZombieMove(zone: Zone, zombies: List<Actor>) {
-
+    private fun handleZombieMove(zone: Zone, zombies: List<Actor>, defaultNoisiestZones: List<Zone>) {
+        val noisiestZonesInSight = ZoneUtils.getNoisiestZones(zone.getAllInSight(), true)
     }
 
     @EventListener

@@ -20,4 +20,6 @@ public interface ZonesQueries {
     Set<ActorId> findActorIdsOn(Position position);
 
     List<Zone> findConnectedZones(Zone zone);
+
+    List<Zone> findNoisiestZones();
 }
