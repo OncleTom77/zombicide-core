@@ -30,7 +30,12 @@ class ZombiesPhase(
     }
 
     private fun activationStep() {
-        val defaultNoisiestZones = zonesQueries.findNoisiestZones()
+        val defaultNoisiestZones = zonesQueries.findNoisiestZones(false)
+
+        // TODO:
+        //  - play zombies that can attack
+        //  - then, compute default noisiest zone
+        //  - then, play zombies that can move
 
         do {
             var zombiePlayed = false
@@ -49,15 +54,15 @@ class ZombiesPhase(
                         }
 
                     if (actors.containsKey(Zombie::class)) {
-                        val zombiesWithRemaingActions = actors[Zombie::class]!!
+                        val zombiesWithRemainingActions = actors[Zombie::class]!!
                             .filter { actorsQueries.getRemainingActionsCountForActor(it.id, gameView.currentTurn) > 0 }
 
-                        if (zombiesWithRemaingActions.isNotEmpty()) {
+                        if (zombiesWithRemainingActions.isNotEmpty()) {
                             if (actors.containsKey(Survivor::class)) {
                                 val survivors = actors[Survivor::class]!!
-                                handleZombieAttack(zone, zombiesWithRemaingActions, survivors)
+                                handleZombieAttack(zone, zombiesWithRemainingActions, survivors)
                             } else {
-                                handleZombieMove(zone, zombiesWithRemaingActions, defaultNoisiestZones)
+                                handleZombieMove(zone, zombiesWithRemainingActions, defaultNoisiestZones)
                             }
                             zombiePlayed = true
                         }
@@ -84,7 +89,15 @@ class ZombiesPhase(
     }
 
     private fun handleZombieMove(zone: Zone, zombies: List<Actor>, defaultNoisiestZones: List<Zone>) {
-        val noisiestZonesInSight = ZoneUtils.getNoisiestZones(zone.getAllInSight(), true)
+        // TODO:
+        //  - get noisiest zones of all zones
+        //  - for each zombie:
+        //    - get noisiest zones with survivors in sight, if no such zone exists, get the default noisiest zone
+        //    - find all possible next zones of all shortest paths to go to the noisiest zone
+        //    - split zombies in equal groups and generate new zombies if necessary
+        //    - make them move to their destination zone
+
+        val noisiestZonesInSight = zonesQueries.findNoisiestZonesInSight(zone)
     }
 
     @EventListener

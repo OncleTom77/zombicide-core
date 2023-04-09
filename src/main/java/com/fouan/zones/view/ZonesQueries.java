@@ -21,5 +21,7 @@ public interface ZonesQueries {
 
     List<Zone> findConnectedZones(Zone zone);
 
-    List<Zone> findNoisiestZones();
+    List<Zone> findNoisiestZones(boolean withSurvivors);
+
+    List<Zone> findNoisiestZonesInSight(Zone zone);
 }

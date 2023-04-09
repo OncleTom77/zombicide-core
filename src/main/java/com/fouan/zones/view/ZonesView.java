@@ -1,8 +1,10 @@
 package com.fouan.zones.view;
 
 import com.fouan.actors.ActorId;
+import com.fouan.actors.Survivor;
 import com.fouan.actors.view.ActorsQueries;
 import com.fouan.events.*;
+import com.fouan.old.game.Direction;
 import com.fouan.zones.Position;
 import com.fouan.zones.Zone;
 import com.fouan.zones.Zone.ZoneMarker;
@@ -146,13 +148,24 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
     }
 
     @Override
-    public List<Zone> findNoisiestZones(boolean withSurvivor) {
-        List<ZoneWithNoise> zoneWithNoises = zones.all()
+    public List<Zone> findNoisiestZones(boolean withSurvivors) {
+        return findNoisiestZones(zones.all(), withSurvivors);
+    }
+
+    private List<Zone> findNoisiestZones(Collection<ComputedZones.ComputedZone> all, boolean withSurvivors) {
+        List<ZoneWithNoise> zoneWithNoises = all
                 .stream()
                 .map(computedZone -> {
-                    long noise = getNoiseForZone(computedZone, withSurvivor);
-                    return new ZoneWithNoise(computedZone.getZone(), noise);
+                    List<Survivor> survivors = computedZone.getActorIds()
+                            .stream()
+                            .map(actorsQueries::findSurvivorBy)
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .toList();
+                    long noise = computedZone.getNoiseTokens() + survivors.size();
+                    return new ZoneWithNoise(computedZone.getZone(), !survivors.isEmpty(), noise);
                 })
+                .filter(zoneWithNoise -> !withSurvivors || zoneWithNoise.containsSurvivors)
                 .toList();
 
         long maxNoise = zoneWithNoises.stream()
@@ -166,19 +179,39 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
                 .toList();
     }
 
-    private long getNoiseForZone(ComputedZones.ComputedZone computedZone, boolean withSurvivor) {
-        long survivorCount = computedZone.getActorIds()
+    @Override
+    public List<Zone> findNoisiestZonesInSight(Zone zone) {
+        var zonesInSight = findZonesInSight(zone)
                 .stream()
-                .map(actorsQueries::findSurvivorBy)
-                .filter(Optional::isPresent)
-                .count();
-
-        if (withSurvivor && survivorCount == 0) {
-            return 0;
-        }
-        return survivorCount + computedZone.getNoiseTokens();
+                .map(zoneInSight -> zones.findByPosition(zoneInSight.getPosition())
+                        .orElseThrow())
+                .toList();
+        return findNoisiestZones(zonesInSight, true);
     }
 
-    record ZoneWithNoise(Zone zone, long noise) {
+    private List<Zone> findZonesInSight(Zone zone) {
+        return Arrays.stream(Direction.values())
+                .map(direction -> getAllZonesInDirection(zone, direction, new ArrayList<>()))
+                .flatMap(Collection::stream)
+                .toList();
+    }
+
+    private List<Zone> getAllZonesInDirection(Zone zone, Direction direction, List<Zone> acc) {
+        Position nextPosition = direction.apply(zone.getPosition());
+        connections.findByZone(zone)
+                .stream()
+                .map(connection -> connection.end().equals(zone)
+                        ? connection.start()
+                        : connection.end())
+                .filter(connectedZone -> connectedZone.getPosition().equals(nextPosition))
+                .findFirst()
+                .ifPresent(zoneInDirection -> {
+                    acc.add(zoneInDirection);
+                    getAllZonesInDirection(zoneInDirection, direction, acc);
+                });
+        return acc;
+    }
+
+    record ZoneWithNoise(Zone zone, boolean containsSurvivors, long noise) {
     }
 }
