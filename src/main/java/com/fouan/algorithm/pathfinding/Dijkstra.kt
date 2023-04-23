@@ -1,45 +1,30 @@
-package com.fouan.algorithm.pathfinding;
+package com.fouan.algorithm.pathfinding
 
-import com.fouan.old.board.Zone;
-import com.fouan.old.board.Zones;
-import org.jgrapht.GraphPath;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleGraph;
+import com.fouan.zones.Zone
+import com.fouan.zones.view.Connection
+import org.jgrapht.GraphPath
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath
+import org.jgrapht.graph.DefaultEdge
+import org.jgrapht.graph.SimpleGraph
+import java.util.*
+import java.util.function.Function
+import java.util.stream.Collectors
+import javax.inject.Named
 
-import javax.inject.Named;
-import java.util.*;
-import java.util.stream.Collectors;
-
-@Named("dijkstra")
-public class Dijkstra implements ZombicideShortestPath {
-
-    @Override
-    public List<Zone> findRoute(Zones zones, Zone from, Zone to) {
-        SimpleGraph<Zone, DefaultEdge> graph = initializeGraph(zones);
-
-        GraphPath<Zone, DefaultEdge> path = new DijkstraShortestPath<>(graph).getPath(from, to);
-
-        return Optional.ofNullable(path)
-                .map(GraphPath::getVertexList)
-                .orElse(null);
+@Named
+class Dijkstra {
+    fun findRoutes(zones: List<Zone>, connections: Set<Connection>, from: List<Zone>, to: Zone): Map<Zone, List<Zone>> {
+        val graph = initializeGraph(zones, connections)
+        return from.mapNotNull { DijkstraShortestPath(graph).getPath(it, to) }
+            .map { Pair<Zone, List<Zone>>(it.startVertex, it.vertexList) }
+            .groupBy( { it.first }, { it.second })
+            .mapValues { it.value.flatten() }
     }
 
-    @Override
-    public Map<Zone, List<Zone>> findRoutes(Zones zones, List<Zone> from, Zone to) {
-        SimpleGraph<Zone, DefaultEdge> graph = initializeGraph(zones);
-
-        return from.stream()
-                .map(zone -> new DijkstraShortestPath<>(graph).getPath(zone, to))
-                .filter(Objects::nonNull)
-                .map(graphPath -> new AbstractMap.SimpleEntry<>(graphPath.getStartVertex(), graphPath.getVertexList()))
-                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
-    }
-
-    private static SimpleGraph<Zone, DefaultEdge> initializeGraph(Zones zones) {
-        SimpleGraph<Zone, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
-        zones.getZones().forEach(graph::addVertex);
-        zones.getZones().forEach(zone -> zone.getConnectedZones().forEach(connectedZone -> graph.addEdge(zone, connectedZone)));
-        return graph;
+    private fun initializeGraph(zones: List<Zone>, connections: Set<Connection>): SimpleGraph<Zone, DefaultEdge> {
+        val graph = SimpleGraph<Zone, DefaultEdge>(DefaultEdge::class.java)
+        zones.forEach { graph.addVertex(it) }
+        connections.forEach { graph.addEdge(it.start, it.end) }
+        return graph
     }
 }

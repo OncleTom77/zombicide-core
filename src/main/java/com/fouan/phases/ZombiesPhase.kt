@@ -1,23 +1,27 @@
 package com.fouan.phases
 
 import com.fouan.actors.Actor
+import com.fouan.actors.ActorId
 import com.fouan.actors.Survivor
 import com.fouan.actors.view.ActorsQueries
+import com.fouan.actors.zombies.Walker
 import com.fouan.actors.zombies.Zombie
+import com.fouan.algorithm.pathfinding.ZombicidePathFinder
 import com.fouan.events.*
 import com.fouan.game.view.GameView
-import com.fouan.old.board.ZoneUtils
 import com.fouan.zones.Zone
 import com.fouan.zones.view.ZonesQueries
 import org.springframework.context.event.EventListener
 import javax.inject.Named
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 @Named
 class ZombiesPhase(
     private val gameView: GameView,
     private val actorsQueries: ActorsQueries,
-    private val zonesQueries: ZonesQueries
+    private val zonesQueries: ZonesQueries,
+    private val pathFinder: ZombicidePathFinder,
 ) : Phase {
 
     override fun play() {
@@ -45,16 +49,17 @@ class ZombiesPhase(
 
                     val actors: Map<KClass<out Actor>, List<Actor>> = zonesQueries.findActorIdsOn(zone.position)
                         .map { actorsQueries.findActorBy(it) }
-                        .groupBy { actor ->
-                            when (actor) {
-                                is Zombie -> return@groupBy Zombie::class
-                                is Survivor -> return@groupBy Survivor::class
-                                else -> throw IllegalStateException()
+                        .groupBy {
+                            if (it::class.isSubclassOf(Zombie::class)) {
+                                Zombie::class
+                            } else {
+                                Survivor::class
                             }
                         }
 
-                    if (actors.containsKey(Zombie::class)) {
-                        val zombiesWithRemainingActions = actors[Zombie::class]!!
+                    if (actors.keys.contains(Zombie::class)) {
+                        val zombiesWithRemainingActions: List<Zombie> = actors[Zombie::class]!!
+                            .map { it as Zombie }
                             .filter { actorsQueries.getRemainingActionsCountForActor(it.id, gameView.currentTurn) > 0 }
 
                         if (zombiesWithRemainingActions.isNotEmpty()) {
@@ -88,16 +93,54 @@ class ZombiesPhase(
         )
     }
 
-    private fun handleZombieMove(zone: Zone, zombies: List<Actor>, defaultNoisiestZones: List<Zone>) {
+    private fun handleZombieMove(zone: Zone, zombies: List<Zombie>, defaultNoisiestZones: List<Zone>) {
         // TODO:
         //  - get noisiest zones of all zones
         //  - for each zombie:
         //    - get noisiest zones with survivors in sight, if no such zone exists, get the default noisiest zone
         //    - find all possible next zones of all shortest paths to go to the noisiest zone
-        //    - split zombies in equal groups and generate new zombies if necessary
+        //    - split zombies in equal groups and generate new zombies if necessaryf
         //    - make them move to their destination zone
 
         val noisiestZonesInSight = zonesQueries.findNoisiestZonesInSight(zone)
+        val destinationZones = if (noisiestZonesInSight.isEmpty()) defaultNoisiestZones else noisiestZonesInSight
+
+        val nextZones = destinationZones.map { pathFinder.findNextZoneOfAllShortestPaths(zone, it) }
+            .flatten()
+            .toSet()
+        splitZombiesInEqualGroups(zombies, nextZones)
+    }
+
+    private fun splitZombiesInEqualGroups(zombies: List<Zombie>, nextZones: Set<Zone>) {
+        zombies.groupBy { it.javaClass.kotlin }
+            .forEach {
+                val remainingZombies = ArrayDeque(it.value)
+                while (remainingZombies.isNotEmpty()) {
+                    nextZones.forEach { zone ->
+                        if (remainingZombies.isEmpty()) {
+                            val newZombie = when (it.key) {
+                                Walker::class -> Walker(ActorId())
+                                else -> throw NotImplementedError()
+                            }
+                            gameView.fireEvent(
+                                ZombieSpawned(
+                                    gameView.currentTurn,
+                                    newZombie,
+                                    zone
+                                )
+                            )
+                        } else {
+                            gameView.fireEvent(
+                                ZombieMoved(
+                                    gameView.currentTurn,
+                                    remainingZombies.removeFirst().id,
+                                    zone.position
+                                )
+                            )
+                        }
+                    }
+                }
+            }
     }
 
     @EventListener
@@ -110,7 +153,7 @@ class ZombiesPhase(
     }
 
     private fun spawnStep() {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     private fun startZombiesTurn() = gameView.fireEvent(ZombiesTurnStarted(gameView.currentTurn))

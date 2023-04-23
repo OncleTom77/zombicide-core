@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -45,6 +46,19 @@ public final class Zone {
         EXIT_ZONE,
         ZOMBIE_SPAWN,
         NORMAL_ZONE,
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Zone zone = (Zone) o;
+        return Objects.equals(position, zone.position);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position);
     }
 
     @Override

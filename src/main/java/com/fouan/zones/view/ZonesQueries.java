@@ -13,6 +13,8 @@ public interface ZonesQueries {
 
     List<Zone> findAll();
 
+    Set<Connection> findAllConnections();
+
     Optional<Zone> findByActorId(ActorId actorId);
 
     List<Zone> findByMarker(ZoneMarker marker);

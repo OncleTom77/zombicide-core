@@ -3,6 +3,7 @@ package com.fouan.zones.view;
 import com.fouan.zones.Zone;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,5 +23,9 @@ public class ComputedConnections {
         return connections.stream()
                 .filter(connection -> connection.implies(zone))
                 .collect(Collectors.toSet());
+    }
+
+    public Set<Connection> all() {
+        return connections;
     }
 }

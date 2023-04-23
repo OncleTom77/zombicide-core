@@ -1,8 +1,6 @@
 package com.fouan.zones.view;
 
 import com.fouan.actors.ActorId;
-import com.fouan.actors.Survivor;
-import com.fouan.actors.view.ActorsQueries;
 import com.fouan.events.*;
 import com.fouan.old.game.Direction;
 import com.fouan.zones.Position;
@@ -22,11 +20,7 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
     private final ComputedZones zones = new ComputedZones();
     private final ComputedConnections connections = new ComputedConnections();
 
-    private final ActorsQueries actorsQueries;
-
-    public ZonesView(ActorsQueries actorsQueries) {
-        this.actorsQueries = actorsQueries;
-    }
+    private final List<ActorId> survivorIds = new ArrayList<>();
 
     @EventListener
     public void handleZoneEvent(ZoneEvent event) {
@@ -44,56 +38,60 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
 
     @EventListener
     public void handleSurvivorAdded(SurvivorAdded event) {
-        zones.update(event.getZone().getPosition(), computedZone -> {
-                    List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
-                    actorIds.add(event.getSurvivor().getId());
-                    return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
-                }
-        );
+        addActor(event.getSurvivor().getId(), event.getZone().getPosition());
+        survivorIds.add(event.getSurvivor().getId());
     }
 
     @EventListener
     public void handleZombieSpawned(ZombieSpawned event) {
-        zones.update(event.getZone().getPosition(), computedZone -> {
-                    List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
-                    actorIds.add(event.getZombie().getId());
-                    return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
-                }
-        );
-    }
-
-    @EventListener
-    public void handleSurvivorMoved(SurvivorMoved event) {
-        ComputedZones.ComputedZone oldZone = zones.findByActorId(event.getActorId())
-                .orElseThrow();
-
-        zones.update(oldZone.getPosition(), computedZone -> {
-            List<ActorId> actorIds = computedZone.getActorIds()
-                    .stream()
-                    .filter(actorId -> !actorId.equals(event.getActorId()))
-                    .toList();
-            return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
-        });
-
-        zones.update(event.getPosition(), computedZone -> {
-            List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
-            actorIds.add(event.getActorId());
-            return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
-        });
+        addActor(event.getZombie().getId(), event.getZone().getPosition());
     }
 
     @EventListener
     public void handleSurvivorDied(SurvivorDied event) {
-        ComputedZones.ComputedZone oldZone = zones.findByActorId(event.getSurvivorId())
+        removeActor(event.getSurvivorId());
+        survivorIds.remove(event.getSurvivorId());
+    }
+
+    @EventListener
+    public void handleZombieDied(ZombieDied event) {
+        removeActor(event.getZombieId());
+    }
+
+    private void addActor(ActorId actorMovedId, Position newPosition) {
+        zones.update(newPosition, computedZone -> {
+            List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
+            actorIds.add(actorMovedId);
+            return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
+        });
+    }
+
+    private void removeActor(ActorId actorDiedId) {
+        ComputedZones.ComputedZone oldZone = zones.findByActorId(actorDiedId)
                 .orElseThrow();
 
         zones.update(oldZone.getPosition(), computedZone -> {
             List<ActorId> actorIds = computedZone.getActorIds()
                     .stream()
-                    .filter(actorId -> !actorId.equals(event.getSurvivorId()))
+                    .filter(actorId -> !actorId.equals(actorDiedId))
                     .toList();
             return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
         });
+    }
+
+    @EventListener
+    public void handleSurvivorMoved(SurvivorMoved event) {
+        moveActor(event.getActorId(), event.getPosition());
+    }
+
+    @EventListener
+    public void handleZombieMoved(ZombieMoved event) {
+        moveActor(event.getActorId(), event.getPosition());
+    }
+
+    private void moveActor(ActorId actorMovedId, Position newPosition) {
+        removeActor(actorMovedId);
+        addActor(actorMovedId, newPosition);
     }
 
     @Override
@@ -107,6 +105,11 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
                 .stream()
                 .map(ComputedZones.ComputedZone::getZone)
                 .toList();
+    }
+
+    @Override
+    public Set<Connection> findAllConnections() {
+        return connections.all();
     }
 
     @Override
@@ -152,21 +155,22 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
         return findNoisiestZones(zones.all(), withSurvivors);
     }
 
-    private List<Zone> findNoisiestZones(Collection<ComputedZones.ComputedZone> all, boolean withSurvivors) {
-        List<ZoneWithNoise> zoneWithNoises = all
-                .stream()
+    private List<Zone> findNoisiestZones(Collection<ComputedZones.ComputedZone> zones, boolean withSurvivors) {
+        List<ZoneWithNoise> zoneWithNoises = zones.stream()
                 .map(computedZone -> {
-                    List<Survivor> survivors = computedZone.getActorIds()
+                    List<ActorId> survivorIdsOnZone = computedZone.getActorIds()
                             .stream()
-                            .map(actorsQueries::findSurvivorBy)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
+                            .filter(this.survivorIds::contains)
                             .toList();
-                    long noise = computedZone.getNoiseTokens() + survivors.size();
-                    return new ZoneWithNoise(computedZone.getZone(), !survivors.isEmpty(), noise);
+                    long noise = computedZone.getNoiseTokens() + survivorIdsOnZone.size();
+                    return new ZoneWithNoise(computedZone.getZone(), !survivorIdsOnZone.isEmpty(), noise);
                 })
                 .filter(zoneWithNoise -> !withSurvivors || zoneWithNoise.containsSurvivors)
                 .toList();
+
+        if (zoneWithNoises.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         long maxNoise = zoneWithNoises.stream()
                 .mapToLong(ZoneWithNoise::noise)

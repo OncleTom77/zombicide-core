@@ -13,7 +13,10 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.event.EventListener;
 
 import javax.inject.Named;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -46,7 +49,7 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     @EventListener
     public void handleZombieDied(ZombieDied event) {
         var zombie = findZombieBy(event.getZombieId())
-                .orElseThrow(() -> new IllegalStateException("Zombie (id: " + event.getZombieId().value() + ") not found"));
+                .orElseThrow(() -> new IllegalStateException("Zombie (id: " + event.getZombieId().getValue() + ") not found"));
 
         log.info("{} is dead", zombie);
         // TODO: 28/01/2023 Should we add methods in ActorsCommands to add/remove actors?
@@ -139,6 +142,9 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     @Override
     public int getRemainingActionsCountForActor(@NotNull ActorId actorId, int turn) {
         int actionsCount = findActorBy(actorId).getActionsCount();
+        if (zombieSpawnedDuringTurn(turn, actorId)) {
+            return 0;
+        }
         int spentActionsCount = findActionEventForActorIdAndTurn(actorId, turn).size();
         return actionsCount - spentActionsCount;
     }
@@ -161,8 +167,17 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                 .reduce((first, second) -> second);
     }
 
+    private boolean zombieSpawnedDuringTurn(int turn, ActorId actorId) {
+        return history.stream()
+                .filter(actorEvent -> actorEvent instanceof ZombieSpawned)
+                .map(actorEvent -> (ZombieSpawned) actorEvent)
+                .anyMatch(event -> event.getTurn() == turn
+                        && event.getZombie().getId().equals(actorId));
+    }
+
     public List<ActorId> findZombieIdsWithRemainingActions(int turn) {
         return findAllZombies().stream()
+                .filter(zombie -> !zombieSpawnedDuringTurn(turn, zombie.getId()))
                 .filter(zombie -> findActionEventForActorIdAndTurn(zombie.getId(), turn).size() < zombie.getActionsCount())
                 .map(Actor::getId)
                 .toList();

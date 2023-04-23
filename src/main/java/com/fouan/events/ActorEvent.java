@@ -1,6 +1,4 @@
 package com.fouan.events;
 
-public interface ActorEvent {
-
-    int getTurn();
+public interface ActorEvent extends GameEvent {
 }

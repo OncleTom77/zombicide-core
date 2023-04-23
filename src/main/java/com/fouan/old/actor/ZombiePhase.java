@@ -1,6 +1,6 @@
 package com.fouan.old.actor;
 
-import com.fouan.algorithm.pathfinding.ZombicidePathFinder;
+import com.fouan.algorithm.pathfinding.old.ZombicidePathFinder;
 import com.fouan.old.board.ZoneUtils;
 import com.fouan.old.board.Zone;
 import com.fouan.old.board.Zones;
