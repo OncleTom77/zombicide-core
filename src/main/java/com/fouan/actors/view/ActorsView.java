@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,7 +33,7 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
 
     @EventListener
     public void handleActorEvents(ActorEvent event) {
-        log.info(event.getClass().getName());
+        log.info("{}(turn: {})", event.getClass().getSimpleName(), event.getTurn());
         history.add(event);
     }
 
@@ -62,12 +63,13 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
 
     @EventListener
     public void handleSurvivorLostLifePoints(SurvivorLostLifePoints event) {
+        AtomicBoolean survivorDied = new AtomicBoolean(false);
         actors.update(event.getSurvivorId(), actor -> {
             Survivor survivor = (Survivor) actor;
             int remainingLifePoints = survivor.getLifePoints() - event.getDamage();
 
             if (remainingLifePoints <= 0) {
-                eventsPublisher.fire(new SurvivorDied(event.getTurn(), event.getSurvivorId()));
+                survivorDied.set(true);
             }
 
             return new Survivor(actor.getId(),
@@ -77,6 +79,10 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                     survivor.getExperience(),
                     survivor.getActionsCount());
         });
+
+        if (survivorDied.get()) {
+            eventsPublisher.fire(new SurvivorDied(event.getTurn(), event.getSurvivorId()));
+        }
     }
 
     @Override
@@ -91,7 +97,7 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
     }
 
     @Override
-    public Optional<Survivor> findSurvivorBy(ActorId id) {
+    public Optional<Survivor> findLivingSurvivorBy(ActorId id) {
         return actors.findById(id)
                 .filter(actor -> actor instanceof Survivor)
                 .map(actor -> (Survivor) actor)
@@ -192,7 +198,7 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                             .orElseThrow();
                     return zonesQueries.findActorIdsOn(zombieZone.getPosition())
                             .stream()
-                            .map(this::findSurvivorBy)
+                            .map(this::findLivingSurvivorBy)
                             .anyMatch(Optional::isPresent);
                 })
                 .toList();

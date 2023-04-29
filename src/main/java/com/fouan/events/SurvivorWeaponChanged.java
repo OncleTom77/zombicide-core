@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public final class SurvivorWeaponChanged
         extends Event<SurvivorWeaponChanged>
-        implements EndGameEvent {
+        implements GameEvent {
 
     private final ActorId survivorId;
     private final Weapon newWeapon;

@@ -2,6 +2,7 @@ package com.fouan.game.view;
 
 import com.fouan.actors.ActorId;
 import com.fouan.actors.view.ActorsCommands;
+import com.fouan.actors.view.ActorsQueries;
 import com.fouan.dice.DiceRoller;
 import com.fouan.events.*;
 import com.fouan.zones.view.ZonesCommands;
@@ -22,6 +23,7 @@ final class DefaultGameView implements GameView {
     private final List<Event<?>> history = new LinkedList<>();
 
     private final ActorsCommands actorsCommands;
+    private final ActorsQueries actorsQueries;
     private final ZonesCommands zonesCommands;
 
     private final EventsPublisher eventsPublisher;
@@ -35,6 +37,13 @@ final class DefaultGameView implements GameView {
     @EventListener
     public void handleAllEvents(Event<?> event) {
         history.add(event);
+    }
+
+    @EventListener
+    public void handleSurvivorDied(SurvivorDied event) {
+        if (actorsQueries.allLivingSurvivors().isEmpty()) {
+            fireEvent(new SurvivorsDefeated(event.getTurn()));
+        }
     }
 
     @Override
@@ -65,9 +74,8 @@ final class DefaultGameView implements GameView {
 
     @Override
     public boolean isGameDone() {
-        return Optional.ofNullable(gameHistory.peekLast())
-            .filter(EndGameEvent.class::isInstance)
-            .isPresent();
+        return gameHistory.stream()
+                .anyMatch(EndGameEvent.class::isInstance);
     }
 
     @Override

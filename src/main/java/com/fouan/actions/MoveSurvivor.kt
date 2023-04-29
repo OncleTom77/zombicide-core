@@ -31,7 +31,7 @@ class MoveSurvivor(
     @EventListener
     fun handleZoneChosen(event: ZoneChosen) {
         actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
-                .flatMap { actorsQueries.findSurvivorBy(it) }
+                .flatMap { actorsQueries.findLivingSurvivorBy(it) }
                 .ifPresent { gameView.fireEvent(SurvivorMoved(event.turn, it.id, event.position)) }
     }
 

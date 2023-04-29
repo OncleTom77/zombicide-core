@@ -92,7 +92,7 @@ public final class ConsoleDisplayer {
 
     @EventListener
     public void handleSurvivorAttacked(SurvivorAttacked event) {
-        Survivor survivor = actorsQueries.findSurvivorBy(event.getActorId())
+        Survivor survivor = actorsQueries.findLivingSurvivorBy(event.getActorId())
                 .orElseThrow();
         output.display("Dice roll: " + event.getAttackResult().rolls());
         output.display(survivor.getName() + " attacked with " + event.getAttackResult().weapon() + " and hits " + event.getAttackResult().hitCount() + " target(s)");
@@ -107,7 +107,7 @@ public final class ConsoleDisplayer {
                 .toList();
         List<Survivor> survivors = event.getSurvivorIds()
                 .stream()
-                .map(actorsQueries::findSurvivorBy)
+                .map(actorsQueries::findLivingSurvivorBy)
                 .map(Optional::orElseThrow)
                 .toList();
 
@@ -168,7 +168,7 @@ public final class ConsoleDisplayer {
     private String getStringRepresentation(Zone zone) {
         Set<ActorId> actorIds = zonesQueries.findActorIdsOn(zone.getPosition());
         boolean containsSurvivors = actorIds.stream()
-                .anyMatch(id -> actorsQueries.findSurvivorBy(id).isPresent());
+                .anyMatch(id -> actorsQueries.findLivingSurvivorBy(id).isPresent());
         boolean containsZombies = actorIds.stream()
                 .anyMatch(id -> actorsQueries.findZombieBy(id).isPresent());
         if (containsSurvivors) {

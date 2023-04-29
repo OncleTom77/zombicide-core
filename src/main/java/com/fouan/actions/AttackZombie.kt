@@ -22,7 +22,7 @@ class AttackZombie(
         if (event.action !== Actions.COMBAT) return
 
         val survivor = actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
-            .flatMap { actorsQueries.findSurvivorBy(it) }
+            .flatMap { actorsQueries.findLivingSurvivorBy(it) }
             .orElseThrow()
 
         // TODO: choose among all survivor's weapons
@@ -41,7 +41,7 @@ class AttackZombie(
     @EventListener
     fun handleZombiesChosen(event: ZombiesChosen) {
         val survivor = actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
-            .flatMap { actorsQueries.findSurvivorBy(it) }
+            .flatMap { actorsQueries.findLivingSurvivorBy(it) }
             .orElseThrow()
 
         event.chosenZombies.forEach {

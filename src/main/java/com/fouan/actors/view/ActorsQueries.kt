@@ -7,7 +7,7 @@ import com.fouan.actors.zombies.Zombie
 import java.util.*
 
 interface ActorsQueries {
-    fun findSurvivorBy(id: ActorId): Optional<Survivor>
+    fun findLivingSurvivorBy(id: ActorId): Optional<Survivor>
     fun allLivingSurvivors(): MutableList<Survivor>
     fun findZombieBy(id: ActorId): Optional<Zombie>
     fun findZombieWithZoneBy(id: ActorId): Optional<ZombieWithZone>

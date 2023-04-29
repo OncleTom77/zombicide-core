@@ -34,46 +34,61 @@ class ZombiesPhase(
     }
 
     private fun activationStep() {
-        val defaultNoisiestZones = zonesQueries.findNoisiestZones(false)
+        playZombiesThatCanAttack()
 
-        // TODO:
-        //  - play zombies that can attack
-        //  - then, compute default noisiest zone
-        //  - then, play zombies that can move
+        if (!gameView.isGameDone) {
+            playZombiesThatMustMove()
+        }
+    }
 
-        do {
-            var zombiePlayed = false
-            zonesQueries.findAll()
-                .forEach { zone ->
-                    // TODO: game can be lost here, do not try to activate more zombies (listen to end game event and check here if the game is lost before doing anything else)
+    private fun playZombiesThatCanAttack() {
+        zonesQueries.findAll()
+            .forEach { zone ->
+                // TODO: game can be lost here, do not try to activate more zombies (listen to end game event and check here if the game is lost before doing anything else)
 
-                    val actors: Map<KClass<out Actor>, List<Actor>> = zonesQueries.findActorIdsOn(zone.position)
-                        .map { actorsQueries.findActorBy(it) }
-                        .groupBy {
-                            if (it::class.isSubclassOf(Zombie::class)) {
-                                Zombie::class
-                            } else {
-                                Survivor::class
-                            }
-                        }
+                val actors = getActorsOnZoneGroupedByType(zone)
 
-                    if (actors.keys.contains(Zombie::class)) {
-                        val zombiesWithRemainingActions: List<Zombie> = actors[Zombie::class]!!
-                            .map { it as Zombie }
-                            .filter { actorsQueries.getRemainingActionsCountForActor(it.id, gameView.currentTurn) > 0 }
+                if (actors.containsKey(Zombie::class) && actors.containsKey(Survivor::class)) {
+                    val survivors = actors[Survivor::class]!!
+                    val zombiesWithRemainingActions = actors[Zombie::class]!!
+                        .map { it as Zombie }
+                        .filter { actorsQueries.getRemainingActionsCountForActor(it.id, gameView.currentTurn) > 0 }
 
-                        if (zombiesWithRemainingActions.isNotEmpty()) {
-                            if (actors.containsKey(Survivor::class)) {
-                                val survivors = actors[Survivor::class]!!
-                                handleZombieAttack(zone, zombiesWithRemainingActions, survivors)
-                            } else {
-                                handleZombieMove(zone, zombiesWithRemainingActions, defaultNoisiestZones)
-                            }
-                            zombiePlayed = true
-                        }
+                    if (zombiesWithRemainingActions.isNotEmpty()) {
+                        handleZombieAttack(zone, zombiesWithRemainingActions, survivors)
                     }
                 }
-        } while (zombiePlayed)
+            }
+    }
+
+    private fun playZombiesThatMustMove() {
+        val defaultNoisiestZones = zonesQueries.findNoisiestZones(false)
+
+        zonesQueries.findAll()
+            .forEach { zone ->
+                // TODO: game can be lost here, do not try to activate more zombies (listen to end game event and check here if the game is lost before doing anything else)
+
+                val actors: Map<KClass<out Actor>, List<Actor>> = getActorsOnZoneGroupedByType(zone)
+
+                if (actors.containsKey(Zombie::class) && !actors.containsKey(Survivor::class)) {
+                    val zombiesWithRemainingActions: List<Zombie> = actors[Zombie::class]!!
+                        .map { it as Zombie }
+                        .filter { actorsQueries.getRemainingActionsCountForActor(it.id, gameView.currentTurn) > 0 }
+
+                    if (zombiesWithRemainingActions.isNotEmpty()) {
+                        handleZombieMove(zone, zombiesWithRemainingActions, defaultNoisiestZones)
+                    }
+                }
+            }
+    }
+
+    private fun getActorsOnZoneGroupedByType(zone: Zone): Map<KClass<out Actor>, List<Actor>> {
+        return zonesQueries.findActorIdsOn(zone.position)
+            .map { actorsQueries.findActorBy(it) }
+            .groupBy {
+                if (it::class.isSubclassOf(Zombie::class)) Zombie::class
+                else Survivor::class
+            }
     }
 
     private fun handleZombieAttack(
@@ -99,7 +114,7 @@ class ZombiesPhase(
         //  - for each zombie:
         //    - get noisiest zones with survivors in sight, if no such zone exists, get the default noisiest zone
         //    - find all possible next zones of all shortest paths to go to the noisiest zone
-        //    - split zombies in equal groups and generate new zombies if necessaryf
+        //    - split zombies in equal groups and generate new zombies if necessary
         //    - make them move to their destination zone
 
         val noisiestZonesInSight = zonesQueries.findNoisiestZonesInSight(zone)
@@ -156,7 +171,7 @@ class ZombiesPhase(
 //        TODO("Not yet implemented")
     }
 
-    private fun startZombiesTurn() = gameView.fireEvent(ZombiesTurnStarted(gameView.currentTurn))
+    private fun startZombiesTurn() = gameView.fireEvent(ZombiesTurnStarted(gameView.currentTurn + 1))
 
     private fun endZombiesTurn() = gameView.fireEvent(ZombiesTurnEnded(gameView.currentTurn))
 }
