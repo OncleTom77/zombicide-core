@@ -22,10 +22,8 @@ class SurvivorsPhase(
     private val logger = KotlinLogging.logger { }
 
     override fun play() {
-
         val turn = gameView.currentTurn + 1
 
-        // List survivors
         actorsQueries.allLivingSurvivors()
             .forEach {
                 startSurvivorTurn(it.id, turn)
@@ -38,21 +36,7 @@ class SurvivorsPhase(
                         endSurvivorTurn(it, turn)
                     }
                 }
-                // Loop action count <= 3
-                // Actions chooser
-                // wait for player action choice
-                // action.play()
-
             }
-        // foreach survivor start turn
-        // 1 Define available actions
-        // 2 Wait for selected action from displayer
-        // 3 Execute action
-
-        // Foreach survivor
-        // 1 Define available actions
-        // 2 Wait for selected action from displayer
-        // 3 Execute action
     }
 
     private fun getPossibleActions(): List<Actions> {

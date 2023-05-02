@@ -1,3 +1,3 @@
-package com.fouan.events;
+package com.fouan.events
 
-public interface ZoneEvent extends GameEvent { }
+interface ZoneEvent : GameEvent

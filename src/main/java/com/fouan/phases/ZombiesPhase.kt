@@ -44,8 +44,6 @@ class ZombiesPhase(
     private fun playZombiesThatCanAttack() {
         zonesQueries.findAll()
             .forEach { zone ->
-                // TODO: game can be lost here, do not try to activate more zombies (listen to end game event and check here if the game is lost before doing anything else)
-
                 val actors = getActorsOnZoneGroupedByType(zone)
 
                 if (actors.containsKey(Zombie::class) && actors.containsKey(Survivor::class)) {
@@ -66,8 +64,6 @@ class ZombiesPhase(
 
         zonesQueries.findAll()
             .forEach { zone ->
-                // TODO: game can be lost here, do not try to activate more zombies (listen to end game event and check here if the game is lost before doing anything else)
-
                 val actors: Map<KClass<out Actor>, List<Actor>> = getActorsOnZoneGroupedByType(zone)
 
                 if (actors.containsKey(Zombie::class) && !actors.containsKey(Survivor::class)) {
@@ -109,14 +105,6 @@ class ZombiesPhase(
     }
 
     private fun handleZombieMove(zone: Zone, zombies: List<Zombie>, defaultNoisiestZones: List<Zone>) {
-        // TODO:
-        //  - get noisiest zones of all zones
-        //  - for each zombie:
-        //    - get noisiest zones with survivors in sight, if no such zone exists, get the default noisiest zone
-        //    - find all possible next zones of all shortest paths to go to the noisiest zone
-        //    - split zombies in equal groups and generate new zombies if necessary
-        //    - make them move to their destination zone
-
         val noisiestZonesInSight = zonesQueries.findNoisiestZonesInSight(zone)
         val destinationZones = if (noisiestZonesInSight.isEmpty()) defaultNoisiestZones else noisiestZonesInSight
 
@@ -127,35 +115,31 @@ class ZombiesPhase(
     }
 
     private fun splitZombiesInEqualGroups(zombies: List<Zombie>, nextZones: Set<Zone>) {
-        zombies.groupBy { it.javaClass.kotlin }
+        zombies.groupBy { it::class }
             .forEach {
                 val remainingZombies = ArrayDeque(it.value)
                 while (remainingZombies.isNotEmpty()) {
                     nextZones.forEach { zone ->
                         if (remainingZombies.isEmpty()) {
-                            val newZombie = when (it.key) {
-                                Walker::class -> Walker(ActorId())
-                                else -> throw NotImplementedError()
-                            }
-                            gameView.fireEvent(
-                                ZombieSpawned(
-                                    gameView.currentTurn,
-                                    newZombie,
-                                    zone
-                                )
-                            )
+                            generateZombie(it.key, zone)
                         } else {
-                            gameView.fireEvent(
-                                ZombieMoved(
-                                    gameView.currentTurn,
-                                    remainingZombies.removeFirst().id,
-                                    zone.position
-                                )
-                            )
+                            moveZombie(remainingZombies.removeFirst(), zone)
                         }
                     }
                 }
             }
+    }
+
+    private fun generateZombie(zombieType: KClass<out Zombie>, zone: Zone) {
+        val newZombie = when (zombieType) {
+            Walker::class -> Walker(ActorId())
+            else -> throw NotImplementedError()
+        }
+        gameView.fireEvent(ZombieSpawned(gameView.currentTurn, newZombie, zone))
+    }
+
+    private fun moveZombie(zombie: Zombie, zone: Zone) {
+        gameView.fireEvent(ZombieMoved(gameView.currentTurn, zombie.id, zone.position))
     }
 
     @EventListener

@@ -1,16 +1,3 @@
-package com.fouan.events;
+package com.fouan.events
 
-import lombok.Getter;
-
-@Getter
-public final class SurvivorsWon
-        extends Event<SurvivorsWon>
-        implements EndGameEvent {
-
-    private final int timestamp;
-
-    public SurvivorsWon(int turn, int timestamp) {
-        super(turn);
-        this.timestamp = timestamp;
-    }
-}
+class SurvivorsWon(turn: Int, val timestamp: Int) : Event<SurvivorsWon>(turn), EndGameEvent

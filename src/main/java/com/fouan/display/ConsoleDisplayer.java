@@ -62,6 +62,11 @@ public final class ConsoleDisplayer {
     @EventListener
     public void handleAvailableActionsDefined(AvailableActionsDefined event) {
         displayBoard();
+        Survivor playingSurvivor = actorsQueries.findCurrentSurvivorIdForTurn(event.getTurn())
+                .flatMap(actorsQueries::findLivingSurvivorBy)
+                .orElseThrow();
+        int remainingActions = actorsQueries.getRemainingActionsCountForActor(playingSurvivor.getId(), event.getTurn());
+        output.display(playingSurvivor + "'s turn. Remaining actions: " + remainingActions);
 
         var availableActions = event.getActions();
         int choice = 0;

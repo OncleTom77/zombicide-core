@@ -1,6 +1,5 @@
-package com.fouan.events;
+package com.fouan.events
 
-public interface GameEvent {
-
-    int getTurn();
+interface GameEvent {
+    val turn: Int
 }

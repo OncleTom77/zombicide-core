@@ -1,20 +1,7 @@
-package com.fouan.events;
+package com.fouan.events
 
-import com.fouan.actors.ActorId;
-import com.fouan.old.weapons.Weapon;
-import lombok.Getter;
+import com.fouan.actors.ActorId
+import com.fouan.old.weapons.Weapon
 
-@Getter
-public final class SurvivorWeaponChanged
-        extends Event<SurvivorWeaponChanged>
-        implements GameEvent {
-
-    private final ActorId survivorId;
-    private final Weapon newWeapon;
-
-    public SurvivorWeaponChanged(int turn, ActorId survivorId, Weapon newWeapon) {
-        super(turn);
-        this.survivorId = survivorId;
-        this.newWeapon = newWeapon;
-    }
-}
+class SurvivorWeaponChanged(turn: Int, val survivorId: ActorId, val newWeapon: Weapon) :
+    Event<SurvivorWeaponChanged>(turn), GameEvent

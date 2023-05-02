@@ -1,3 +1,3 @@
-package com.fouan.events;
+package com.fouan.events
 
-public interface EndGameEvent extends GameEvent { }
+interface EndGameEvent : GameEvent

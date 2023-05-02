@@ -1,4 +1,3 @@
-package com.fouan.events;
+package com.fouan.events
 
-public interface ActorEvent extends GameEvent {
-}
+interface ActorEvent : GameEvent

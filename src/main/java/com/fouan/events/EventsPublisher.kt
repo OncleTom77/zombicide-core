@@ -1,7 +1,5 @@
-package com.fouan.events;
+package com.fouan.events
 
-@FunctionalInterface
-public interface EventsPublisher {
-
-    void fire(Event<?> event);
+fun interface EventsPublisher {
+    fun fire(event: Event<*>)
 }

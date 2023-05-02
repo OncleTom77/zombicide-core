@@ -1,23 +1,15 @@
-package com.fouan.events;
+package com.fouan.events
 
-import com.fouan.zones.Zone;
-import com.fouan.zones.view.Connection;
-import lombok.Getter;
+import com.fouan.zones.Zone
+import com.fouan.zones.view.Connection
 
-import java.util.List;
-import java.util.Set;
+class BoardInitialized(turn: Int, zones: List<Zone>, connections: Set<Connection>) :
+    Event<BoardInitialized>(turn), ZoneEvent {
+    val zones: List<Zone>
+    val connections: Set<Connection>
 
-@Getter
-public final class BoardInitialized
-        extends Event<BoardInitialized>
-        implements ZoneEvent {
-
-    private final List<Zone> zones;
-    private final Set<Connection> connections;
-
-    public BoardInitialized(int turn, List<Zone> zones, Set<Connection> connections) {
-        super(turn);
-        this.zones = List.copyOf(zones);
-        this.connections = Set.copyOf(connections);
+    init {
+        this.zones = zones.toMutableList()
+        this.connections = connections.toMutableSet()
     }
 }
