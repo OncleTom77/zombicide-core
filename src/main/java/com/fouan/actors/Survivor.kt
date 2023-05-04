@@ -1,74 +1,46 @@
-package com.fouan.actors;
+package com.fouan.actors
 
-import com.fouan.weapons.Weapon;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import com.fouan.actors.view.LifeStatus
+import com.fouan.weapons.Weapon
 
-import java.util.Objects;
+class Survivor(
+    id: ActorId,
+    val lifePoints: Int,
+    val name: String,
+    val weapon: Weapon,
+    val experience: Int,
+    actionsCount: Int,
+) : Actor(
+    id, actionsCount
+) {
+    val dangerLevel: DangerLevel = DangerLevel.fromExperience(experience)
 
-public final class Survivor extends Actor {
+    val lifeStatus: LifeStatus
+        get() = if (lifePoints > 0) LifeStatus.ALIVE else LifeStatus.DEAD
 
-    private final String name;
-    private final Weapon weapon;
-    private final int experience;
-    private final DangerLevel dangerLevel;
-    private final int lifePoints;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
 
-    public Survivor(ActorId id, int lifePoints, String name, Weapon weapon, int experience, int actionsCount) {
-        super(id, actionsCount);
-        this.name = name;
-        this.weapon = weapon;
-        this.experience = experience;
-        this.dangerLevel = DangerLevel.fromExperience(experience);
-        this.lifePoints = lifePoints;
+        other as Survivor
+
+        if (lifePoints != other.lifePoints) return false
+        if (name != other.name) return false
+        if (weapon != other.weapon) return false
+        if (experience != other.experience) return false
+        return dangerLevel == other.dangerLevel
     }
 
-    public LifeStatus getLifeStatus() {
-        return lifePoints > 0 ? LifeStatus.ALIVE : LifeStatus.DEAD;
+    override fun hashCode(): Int {
+        var result = lifePoints
+        result = 31 * result + name.hashCode()
+        result = 31 * result + weapon.hashCode()
+        result = 31 * result + experience
+        result = 31 * result + dangerLevel.hashCode()
+        return result
     }
 
-    public String getName() {
-        return this.name;
-    }
-
-    public Weapon getWeapon() {
-        return this.weapon;
-    }
-
-    public int getExperience() {
-        return this.experience;
-    }
-
-    public DangerLevel getDangerLevel() {
-        return this.dangerLevel;
-    }
-
-    public int getLifePoints() {
-        return this.lifePoints;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Survivor survivor = (Survivor) o;
-        return experience == survivor.experience && lifePoints == survivor.lifePoints && Objects.equals(name, survivor.name) && Objects.equals(weapon, survivor.weapon) && dangerLevel == survivor.dangerLevel;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, weapon, experience, dangerLevel, lifePoints);
-    }
-
-    @Override
-    public String toString() {
-        return "Survivor{" +
-                "name='" + name + '\'' +
-                ", lifePoints=" + lifePoints +
-                '}';
-    }
-
-    public enum LifeStatus {
-        ALIVE, DEAD
+    override fun toString(): String {
+        return "Survivor(name='$name', lifePoints=$lifePoints)"
     }
 }

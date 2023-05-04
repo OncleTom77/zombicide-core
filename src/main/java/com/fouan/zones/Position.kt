@@ -1,55 +1,40 @@
-package com.fouan.zones;
+package com.fouan.zones
 
-import lombok.EqualsAndHashCode;
+import kotlin.math.abs
 
-import java.util.Comparator;
+class Position(val x: Int, private val y: Int) {
+    fun plusX(value: Int): Position = Position(x + value, y)
 
-@EqualsAndHashCode
-public final class Position {
-    public static final Comparator<Position> BOARD_COMPARATOR = (o1, o2) -> {
-        if (o1.y == o2.y) {
-            return o1.x - o2.x;
-        }
-        return o1.y - o2.y;
-    };
+    fun minusX(value: Int): Position = plusX(-value)
 
-    private final int x;
-    private final int y;
+    fun plusY(value: Int): Position = Position(x, y + value)
 
-    public Position(int x, int y) {
-        this.x = x;
-        this.y = y;
+    fun minusY(value: Int): Position = plusY(-value)
+
+    fun computeDistance(other: Position): Int = abs(x - other.x) + abs(y - other.y)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Position
+
+        if (x != other.x) return false
+        return y == other.y
     }
 
-    public Position plusX(int value) {
-        return new Position(x + value, y);
+    override fun hashCode(): Int {
+        var result = x
+        result = 31 * result + y
+        return result
     }
 
-    public Position minusX(int value) {
-        return plusX(-value);
+    override fun toString(): String {
+        return "Position(x=$x, y=$y)"
     }
 
-    public Position plusY(int value) {
-        return new Position(x, y + value);
-    }
-
-    public Position minusY(int value) {
-        return plusY(-value);
-    }
-
-    public int computeDistance(Position other) {
-        return Math.abs(x - other.x) + Math.abs(y - other.y);
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    @Override
-    public String toString() {
-        return "Position{" +
-                "x=" + x +
-                ", y=" + y +
-                '}';
+    companion object {
+        val BOARD_COMPARATOR: Comparator<Position> = Comparator.comparing(Position::y)
+            .thenComparing(Position::x)
     }
 }

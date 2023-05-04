@@ -1,5 +1,6 @@
-package com.fouan.actors.view;
+package com.fouan.actors.view
 
-public enum LifeStatus {
-    ALIVE, DEAD
+enum class LifeStatus {
+    ALIVE,
+    DEAD
 }

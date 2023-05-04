@@ -144,7 +144,7 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
     public List<Zone> findConnectedZones(Zone zone) {
         return connections.findByZone(zone)
                 .stream()
-                .flatMap(connection -> Stream.of(connection.start(), connection.end()))
+                .flatMap(connection -> Stream.of(connection.getStart(), connection.getEnd()))
                 .filter(connectedZone -> !connectedZone.equals(zone))
                 .distinct()
                 .toList();
@@ -204,9 +204,9 @@ public final class ZonesView implements ZonesCommands, ZonesQueries {
         Position nextPosition = direction.apply(zone.getPosition());
         connections.findByZone(zone)
                 .stream()
-                .map(connection -> connection.end().equals(zone)
-                        ? connection.start()
-                        : connection.end())
+                .map(connection -> connection.getEnd().equals(zone)
+                        ? connection.getStart()
+                        : connection.getEnd())
                 .filter(connectedZone -> connectedZone.getPosition().equals(nextPosition))
                 .findFirst()
                 .ifPresent(zoneInDirection -> {

@@ -1,24 +1,20 @@
-package com.fouan.actors;
+package com.fouan.actors
 
-public enum DangerLevel {
+enum class DangerLevel(private val experienceThreshold: Int) {
     BLUE(6),
     YELLOW(18),
     ORANGE(42),
     RED(43);
 
-    private final int experienceThreshold;
-
-    DangerLevel(int experienceThreshold) {
-        this.experienceThreshold = experienceThreshold;
-    }
-
-    public static DangerLevel fromExperience(int experience) {
-        for (var value : values()) {
-            if (experience <= value.experienceThreshold) {
-                return value;
+    companion object {
+        @JvmStatic
+        fun fromExperience(experience: Int): DangerLevel {
+            for (value in values()) {
+                if (experience <= value.experienceThreshold) {
+                    return value
+                }
             }
+            throw IllegalStateException("No danger level found")
         }
-
-        throw new IllegalStateException("No danger level found");
     }
 }

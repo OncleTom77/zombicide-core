@@ -1,6 +1,5 @@
-package com.fouan.actors.view;
+package com.fouan.actors.view
 
-public interface ActorsCommands {
-
-    void clear();
+interface ActorsCommands {
+    fun clear()
 }

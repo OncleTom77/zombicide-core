@@ -1,6 +1,5 @@
-package com.fouan.zones.view;
+package com.fouan.zones.view
 
-public interface ZonesCommands {
-
-    void clear();
+interface ZonesCommands {
+    fun clear()
 }

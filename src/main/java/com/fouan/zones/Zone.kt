@@ -1,70 +1,47 @@
-package com.fouan.zones;
+package com.fouan.zones
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+class Zone private constructor(
+    val position: Position,
+    markers: List<ZoneMarker>
+) {
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+    val markers: List<ZoneMarker> = markers
+        get() = field.toMutableList()
 
-import static lombok.AccessLevel.PRIVATE;
-
-@AllArgsConstructor(access = PRIVATE)
-public final class Zone {
-
-    public static final Comparator<Zone> ZONE_POSITION_COMPARATOR = (o1, o2) -> Position.BOARD_COMPARATOR.compare(o1.getPosition(), o2.getPosition());
-
-    private final Position position;
-    private final List<ZoneMarker> markers;
-
-    public static Zone startingZone(Position position) {
-        return new Zone(position, List.of(ZoneMarker.STARTING_ZONE));
-    }
-
-    public static Zone exitZone(Position position) {
-        return new Zone(position, List.of(ZoneMarker.EXIT_ZONE));
-    }
-
-    public static Zone zombieSpawnZone(Position position) {
-        return new Zone(position, List.of(ZoneMarker.ZOMBIE_SPAWN));
-    }
-
-    public static Zone normalZone(Position position) {
-        return new Zone(position, List.of(ZoneMarker.NORMAL_ZONE));
-    }
-
-    public Position getPosition() {
-        return position;
-    }
-
-    public List<ZoneMarker> getMarkers() {
-        return List.copyOf(markers);
-    }
-
-    public enum ZoneMarker {
+    enum class ZoneMarker {
         STARTING_ZONE,
         EXIT_ZONE,
         ZOMBIE_SPAWN,
-        NORMAL_ZONE,
+        NORMAL_ZONE
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Zone zone = (Zone) o;
-        return Objects.equals(position, zone.position);
+    companion object {
+        @JvmField
+        val ZONE_POSITION_COMPARATOR: Comparator<Zone> = Comparator.comparing(Zone::position, Position.BOARD_COMPARATOR)
+
+        fun startingZone(position: Position): Zone = Zone(position, listOf(ZoneMarker.STARTING_ZONE))
+
+        fun exitZone(position: Position): Zone = Zone(position, listOf(ZoneMarker.EXIT_ZONE))
+
+        fun zombieSpawnZone(position: Position): Zone = Zone(position, listOf(ZoneMarker.ZOMBIE_SPAWN))
+
+        fun normalZone(position: Position): Zone = Zone(position, listOf(ZoneMarker.NORMAL_ZONE))
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(position);
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Zone
+
+        return position == other.position
     }
 
-    @Override
-    public String toString() {
-        return "Zone{" +
-                "position=" + position +
-                '}';
+    override fun hashCode(): Int {
+        return position.hashCode()
+    }
+
+    override fun toString(): String {
+        return "Zone(position=$position)"
     }
 }

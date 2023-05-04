@@ -101,7 +101,7 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
         return actors.findById(id)
                 .filter(actor -> actor instanceof Survivor)
                 .map(actor -> (Survivor) actor)
-                .filter(survivor -> survivor.getLifeStatus() == Survivor.LifeStatus.ALIVE);
+                .filter(survivor -> survivor.getLifeStatus() == LifeStatus.ALIVE);
     }
 
     @Override
@@ -109,7 +109,7 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
         return actors.all()
                 .filter(actor -> actor instanceof Survivor)
                 .map(actor -> (Survivor) actor)
-                .filter(survivor -> survivor.getLifeStatus() == Survivor.LifeStatus.ALIVE)
+                .filter(survivor -> survivor.getLifeStatus() == LifeStatus.ALIVE)
                 .toList();
     }
 

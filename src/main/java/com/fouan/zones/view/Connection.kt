@@ -1,52 +1,46 @@
-package com.fouan.zones.view;
+package com.fouan.zones.view
 
-import com.fouan.zones.Position;
-import com.fouan.zones.Zone;
+import com.fouan.zones.Zone
 
-import java.util.Objects;
+class Connection(start: Zone, end: Zone) {
 
-public record Connection(Zone start, Zone end) {
+    val start: Zone
+    val end: Zone
 
-    public Connection(Zone start, Zone end) {
-        if (start == null || end == null) {
-            throw new IllegalArgumentException("Start and end must not be null");
-        }
-        if (start.equals(end)) {
-            throw new IllegalArgumentException("Start and end must be different");
-        }
+    init {
+        require(start != end) { "Start and end must be different" }
         if (Zone.ZONE_POSITION_COMPARATOR.compare(start, end) < 0) {
-            this.start = start;
-            this.end = end;
+            this.start = start
+            this.end = end
         } else {
-            this.start = end;
-            this.end = start;
+            this.start = end
+            this.end = start
         }
     }
 
-    public boolean implies(Zone zone) {
-        Position position = zone.getPosition();
-        return start.getPosition().equals(position)
-                || end.getPosition().equals(position);
+    fun implies(zone: Zone): Boolean {
+        val position = zone.position
+        return (start.position == position || end.position == position)
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Connection that = (Connection) o;
-        return Objects.equals(start, that.start) && Objects.equals(end, that.end);
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Connection
+
+        if (start != other.start) return false
+        return end == other.end
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(start, end);
+    override fun hashCode(): Int {
+        var result = start.hashCode()
+        result = 31 * result + end.hashCode()
+        return result
     }
 
-    @Override
-    public String toString() {
-        return "Connection{" +
-                "start=" + start +
-                ", end=" + end +
-                '}';
+    override fun toString(): String {
+        return "Connection(start=$start, end=$end)"
     }
+
 }
