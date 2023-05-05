@@ -16,5 +16,8 @@ enum class DangerLevel(private val experienceThreshold: Int) {
             }
             throw IllegalStateException("No danger level found")
         }
+
+        @JvmField
+        val DANGER_LEVEL_COMPARATOR = Comparator.comparing(DangerLevel::experienceThreshold)
     }
 }

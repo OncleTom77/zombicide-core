@@ -2,6 +2,7 @@ package com.fouan.phases
 
 import com.fouan.actors.Actor
 import com.fouan.actors.ActorId
+import com.fouan.actors.DangerLevel
 import com.fouan.actors.Survivor
 import com.fouan.actors.view.ActorsQueries
 import com.fouan.actors.zombies.Walker
@@ -9,6 +10,7 @@ import com.fouan.actors.zombies.Zombie
 import com.fouan.algorithm.pathfinding.ZombicidePathFinder
 import com.fouan.events.*
 import com.fouan.game.view.GameView
+import com.fouan.spawn.ZombieSpawnCardDeck
 import com.fouan.zones.Zone
 import com.fouan.zones.view.ZonesQueries
 import org.springframework.context.event.EventListener
@@ -24,11 +26,16 @@ class ZombiesPhase(
     private val pathFinder: ZombicidePathFinder,
 ) : Phase {
 
+    private val zombieSpawnCardDeck = ZombieSpawnCardDeck()
+
     override fun play() {
         startZombiesTurn()
 
         activationStep()
-        spawnStep()
+
+        if (!gameView.isGameDone) {
+            spawnStep()
+        }
 
         endZombiesTurn()
     }
@@ -106,7 +113,7 @@ class ZombiesPhase(
 
     private fun handleZombieMove(zone: Zone, zombies: List<Zombie>, defaultNoisiestZones: List<Zone>) {
         val noisiestZonesInSight = zonesQueries.findNoisiestZonesInSight(zone)
-        val destinationZones = if (noisiestZonesInSight.isEmpty()) defaultNoisiestZones else noisiestZonesInSight
+        val destinationZones = noisiestZonesInSight.ifEmpty { defaultNoisiestZones }
 
         val nextZones = destinationZones.map { pathFinder.findNextZoneOfAllShortestPaths(zone, it) }
             .flatten()
@@ -145,14 +152,31 @@ class ZombiesPhase(
     @EventListener
     fun handleZombieAttacksDistributed(event: ZombieAttacksDistributed) {
         event.distribution.forEach {
-            it.value.forEach { zombie ->
-                gameView.fireEvent(SurvivorLostLifePoints(event.turn, it.key.id, zombie.id, zombie.damage))
-            }
+            gameView.fireEvent(
+                SurvivorLostLifePoints(
+                    event.turn,
+                    it.key.id,
+                    it.value.map { zombie -> zombie.id },
+                    it.value.sumOf { zombie -> zombie.damage }
+                )
+            )
         }
     }
 
     private fun spawnStep() {
-//        TODO("Not yet implemented")
+        val currentDangerLevel = actorsQueries.getCurrentDangerLevel()
+        zonesQueries.findByMarker(Zone.ZoneMarker.ZOMBIE_SPAWN)
+            .forEach { spawnZombieOnZone(it, currentDangerLevel) }
+    }
+
+    private fun spawnZombieOnZone(zone: Zone, currentDangerLevel: DangerLevel) {
+        zombieSpawnCardDeck.drawCard()
+            .getSpawnInfo(currentDangerLevel)
+            ?.let {
+                (1..it.quantity).forEach { _ ->
+                    generateZombie(it.type, zone)
+                }
+            }
     }
 
     private fun startZombiesTurn() = gameView.fireEvent(ZombiesTurnStarted(gameView.currentTurn + 1))

@@ -2,6 +2,7 @@ package com.fouan.actors.view;
 
 import com.fouan.actors.Actor;
 import com.fouan.actors.ActorId;
+import com.fouan.actors.DangerLevel;
 import com.fouan.actors.Survivor;
 import com.fouan.actors.zombies.Zombie;
 import com.fouan.events.*;
@@ -202,5 +203,14 @@ public final class ActorsView implements ActorsCommands, ActorsQueries {
                             .anyMatch(Optional::isPresent);
                 })
                 .toList();
+    }
+
+    @Override
+    public DangerLevel getCurrentDangerLevel() {
+        return allLivingSurvivors()
+                .stream()
+                .map(Survivor::getDangerLevel)
+                .max(DangerLevel.DANGER_LEVEL_COMPARATOR)
+                .orElseThrow();
     }
 }
