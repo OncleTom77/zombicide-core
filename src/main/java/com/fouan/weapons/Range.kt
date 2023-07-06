@@ -1,17 +1,8 @@
-package com.fouan.weapons;
+package com.fouan.weapons
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+class Range(val min: Int, val max: Int) {
 
-@AllArgsConstructor
-public final class Range {
-
-    private final int min;
-
-    @Getter
-    private final int max;
-
-    public boolean contains(int value) {
-        return min <= value && value <= max;
+    operator fun contains(value: Int): Boolean {
+        return value in min..max
     }
 }

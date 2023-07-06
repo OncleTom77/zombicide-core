@@ -1,31 +1,20 @@
-package com.fouan.zones.view;
+package com.fouan.zones.view
 
-import com.fouan.zones.Zone;
+import com.fouan.zones.Zone
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+class ComputedConnections {
+    private val connections: MutableSet<Connection> = mutableSetOf()
 
-public class ComputedConnections {
-
-    private final Set<Connection> connections;
-
-    public ComputedConnections() {
-        connections = new HashSet<>();
+    fun add(connection: Connection) {
+        connections.add(connection)
     }
 
-    public void add(Connection connection) {
-        connections.add(connection);
+    fun findByZone(zone: Zone): Set<Connection> {
+        return connections.filter { it.implies(zone) }
+            .toSet()
     }
 
-    public Set<Connection> findByZone(Zone zone) {
-        return connections.stream()
-                .filter(connection -> connection.implies(zone))
-                .collect(Collectors.toSet());
-    }
-
-    public Set<Connection> all() {
-        return connections;
+    fun all(): Set<Connection> {
+        return connections
     }
 }

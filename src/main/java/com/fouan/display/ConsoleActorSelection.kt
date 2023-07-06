@@ -1,7 +1,6 @@
 package com.fouan.display
 
 import com.fouan.actors.Actor
-import com.fouan.old.io.ChoiceMaker
 import javax.inject.Named
 
 @Named

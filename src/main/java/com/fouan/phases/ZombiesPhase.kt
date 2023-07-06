@@ -99,8 +99,6 @@ class ZombiesPhase(
         zombies: List<Actor>,
         survivors: List<Actor>
     ) {
-        zombies.forEach { gameView.fireEvent(ZombieAttacked(gameView.currentTurn, it.id)) }
-
         gameView.fireEvent(
             AvailableSurvivorsForZombiesAttackDefined(
                 gameView.currentTurn,

@@ -1,216 +1,164 @@
-package com.fouan.actors.view;
+package com.fouan.actors.view
 
-import com.fouan.actors.Actor;
-import com.fouan.actors.ActorId;
-import com.fouan.actors.DangerLevel;
-import com.fouan.actors.Survivor;
-import com.fouan.actors.zombies.Zombie;
-import com.fouan.events.*;
-import com.fouan.zones.Zone;
-import com.fouan.zones.view.ZonesQueries;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.context.event.EventListener;
+import com.fouan.actors.Actor
+import com.fouan.actors.ActorId
+import com.fouan.actors.DangerLevel
+import com.fouan.actors.Survivor
+import com.fouan.actors.zombies.Zombie
+import com.fouan.events.*
+import com.fouan.zones.Zone
+import com.fouan.zones.view.ZonesQueries
+import org.springframework.context.event.EventListener
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Named
 
-import javax.inject.Named;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-@Slf4j
 @Named
-@AllArgsConstructor
-public final class ActorsView implements ActorsCommands, ActorsQueries {
-
-    private final List<ActorEvent> history = new LinkedList<>();
-    private final Actors actors = new Actors();
-
-    private final ZonesQueries zonesQueries;
-    private final EventsPublisher eventsPublisher;
+class ActorsView(private val zonesQueries: ZonesQueries, private val eventsPublisher: EventsPublisher) : ActorsCommands,
+    ActorsQueries {
+    private val history: MutableList<ActorEvent> = mutableListOf()
+    private val actors = Actors()
 
     @EventListener
-    public void handleActorEvents(ActorEvent event) {
-        log.info("{}(turn: {})", event.getClass().getSimpleName(), event.getTurn());
-        history.add(event);
+    fun handleActorEvents(event: ActorEvent) {
+        history.add(event)
     }
 
     @EventListener
-    public void handleSurvivorAdded(SurvivorAdded event) {
-        actors.add(event.getSurvivor());
+    fun handleSurvivorAdded(event: SurvivorAdded) {
+        actors.add(event.survivor)
     }
 
     @EventListener
-    public void handleZombieSpawn(ZombieSpawned event) {
-        actors.add(event.getZombie());
+    fun handleZombieSpawn(event: ZombieSpawned) {
+        actors.add(event.zombie)
     }
 
     @EventListener
-    public void handleZombieDied(ZombieDied event) {
-        var zombie = findZombieBy(event.getZombieId())
-                .orElseThrow(() -> new IllegalStateException("Zombie (id: " + event.getZombieId().getValue() + ") not found"));
-
-        log.info("{} is dead", zombie);
+    fun handleZombieDied(event: ZombieDied) {
+        val zombie = findZombieBy(event.zombieId)!!
         // TODO: 28/01/2023 Should we add methods in ActorsCommands to add/remove actors?
-        actors.remove(zombie);
-
+        actors.remove(zombie)
         eventsPublisher.fire(
-                new SurvivorGainedExperience(event.getTurn(), event.getAttackerId(), zombie.getExperienceProvided())
-        );
+            SurvivorGainedExperience(event.turn, event.attackerId, zombie.experienceProvided)
+        )
     }
 
     @EventListener
-    public void handleSurvivorLostLifePoints(SurvivorLostLifePoints event) {
-        AtomicBoolean survivorDied = new AtomicBoolean(false);
-        actors.update(event.getSurvivorId(), actor -> {
-            Survivor survivor = (Survivor) actor;
-            int remainingLifePoints = survivor.getLifePoints() - event.getDamage();
-
+    fun handleSurvivorLostLifePoints(event: SurvivorLostLifePoints) {
+        val survivorDied = AtomicBoolean(false)
+        actors.update(event.survivorId) { actor: Actor ->
+            val survivor = actor as Survivor
+            val remainingLifePoints = survivor.lifePoints - event.damage
             if (remainingLifePoints <= 0) {
-                survivorDied.set(true);
+                survivorDied.set(true)
             }
-
-            return new Survivor(actor.getId(),
-                    remainingLifePoints,
-                    survivor.getName(),
-                    survivor.getWeapon(),
-                    survivor.getExperience(),
-                    survivor.getActionsCount());
-        });
-
+            Survivor(
+                actor.id,
+                remainingLifePoints,
+                survivor.name,
+                survivor.weapon,
+                survivor.experience,
+                survivor.actionsCount
+            )
+        }
         if (survivorDied.get()) {
-            eventsPublisher.fire(new SurvivorDied(event.getTurn(), event.getSurvivorId()));
+            eventsPublisher.fire(SurvivorDied(event.turn, event.survivorId))
         }
     }
 
-    @Override
-    public void clear() {
-        history.clear();
+    override fun clear() {
+        history.clear()
     }
 
-    @Override
-    public Actor findActorBy(ActorId id) {
-        return actors.findById(id)
-                .orElseThrow();
+    override fun findActorBy(id: ActorId): Actor {
+        return actors.findById(id)!!
     }
 
-    @Override
-    public Optional<Survivor> findLivingSurvivorBy(ActorId id) {
-        return actors.findById(id)
-                .filter(actor -> actor instanceof Survivor)
-                .map(actor -> (Survivor) actor)
-                .filter(survivor -> survivor.getLifeStatus() == LifeStatus.ALIVE);
+    override fun findLivingSurvivorBy(id: ActorId): Survivor? {
+        val actor = actors.findById(id)
+
+        if (actor != null && actor is Survivor && actor.lifeStatus === LifeStatus.ALIVE) {
+            return actor;
+        }
+        return null
     }
 
-    @Override
-    public List<Survivor> allLivingSurvivors() {
+    override fun allLivingSurvivors(): List<Survivor> {
         return actors.all()
-                .filter(actor -> actor instanceof Survivor)
-                .map(actor -> (Survivor) actor)
-                .filter(survivor -> survivor.getLifeStatus() == LifeStatus.ALIVE)
-                .toList();
+            .filterIsInstance<Survivor>()
+            .filter { survivor -> survivor.lifeStatus === LifeStatus.ALIVE }
     }
 
-    @Override
-    public Optional<Zombie> findZombieBy(ActorId id) {
-        return actors.findById(id)
-                .filter(actor -> actor instanceof Zombie)
-                .map(actor -> (Zombie) actor);
+    override fun findZombieBy(id: ActorId): Zombie? {
+        val actor = actors.findById(id)
+
+        if (actor != null && actor is Zombie) {
+            return actor
+        }
+
+        return null
     }
 
-    @NotNull
-    private List<Zombie> findAllZombies() {
+    private fun findAllZombies(): List<Zombie> {
         return actors.all()
-                .filter(actor -> actor instanceof Zombie)
-                .map(actor -> (Zombie) actor)
-                .toList();
+            .filterIsInstance<Zombie>()
     }
 
-    @Override
-    public Optional<ZombieWithZone> findZombieWithZoneBy(ActorId id) {
-        return findZombieBy(id)
-                .map(zombie -> new ZombieWithZone(zombie, zonesQueries.findByActorId(id).orElse(null)));
+    override fun findAllZombiesOnSameZoneAsSurvivor(survivorId: ActorId): Set<Zombie> {
+        val survivorZone = zonesQueries.findByActorId(survivorId)!!
+        return zonesQueries.findActorIdsOn(survivorZone.position)
+            .mapNotNull { id -> findZombieBy(id) }
+            .toSet()
     }
 
-    @Override
-    public Set<Zombie> findAllZombiesOnSameZoneAsSurvivor(ActorId survivorId) {
-        Zone survivorZone = zonesQueries.findByActorId(survivorId)
-                .orElseThrow();
-        return zonesQueries.findActorIdsOn(survivorZone.getPosition())
-                .stream()
-                .map(this::findZombieBy)
-                .flatMap(Optional::stream)
-                .collect(Collectors.toSet());
-    }
-
-    @Override
-    public int getRemainingActionsCountForActor(@NotNull ActorId actorId, int turn) {
-        int actionsCount = findActorBy(actorId).getActionsCount();
+    override fun getRemainingActionsCountForActor(actorId: ActorId, turn: Int): Int {
+        val actionsCount = findActorBy(actorId).actionsCount
         if (zombieSpawnedDuringTurn(turn, actorId)) {
-            return 0;
+            return 0
         }
-        int spentActionsCount = findActionEventForActorIdAndTurn(actorId, turn).size();
-        return actionsCount - spentActionsCount;
+        val spentActionsCount = findActionEventForActorIdAndTurn(actorId, turn).size
+        return actionsCount - spentActionsCount
     }
 
-    private List<ActionEvent> findActionEventForActorIdAndTurn(ActorId actorId, int turn) {
-        return history.stream()
-                .filter(event -> event instanceof ActionEvent)
-                .map(event -> (ActionEvent) event)
-                .filter(actionEvent -> actionEvent.getActorId().equals(actorId) && actionEvent.getTurn() == turn)
-                .toList();
+    private fun findActionEventForActorIdAndTurn(actorId: ActorId, turn: Int): List<ActionEvent> {
+        return history
+            .filterIsInstance<ActionEvent>()
+            .filter { actionEvent -> actionEvent.actorId == actorId && actionEvent.turn == turn }
     }
 
-    @Override
-    public Optional<ActorId> findCurrentSurvivorIdForTurn(int turn) {
-        return history.stream()
-                .filter(actorEvent -> actorEvent instanceof SurvivorsTurnStarted)
-                .map(actorEvent -> (SurvivorsTurnStarted) actorEvent)
-                .filter(survivorsTurnStarted -> survivorsTurnStarted.getTurn() == turn)
-                .map(SurvivorsTurnStarted::getSurvivorId)
-                .reduce((first, second) -> second);
+    override fun findCurrentSurvivorIdForTurn(turn: Int): ActorId? {
+        return history
+            .filterIsInstance<SurvivorsTurnStarted>()
+            .findLast { survivorsTurnStarted -> survivorsTurnStarted.turn == turn }
+            ?.survivorId
     }
 
-    private boolean zombieSpawnedDuringTurn(int turn, ActorId actorId) {
-        return history.stream()
-                .filter(actorEvent -> actorEvent instanceof ZombieSpawned)
-                .map(actorEvent -> (ZombieSpawned) actorEvent)
-                .anyMatch(event -> event.getTurn() == turn
-                        && event.getZombie().getId().equals(actorId));
+    private fun zombieSpawnedDuringTurn(turn: Int, actorId: ActorId): Boolean {
+        return history
+            .filterIsInstance<ZombieSpawned>()
+            .any { event -> event.turn == turn && event.zombie.id == actorId }
     }
 
-    public List<ActorId> findZombieIdsWithRemainingActions(int turn) {
-        return findAllZombies().stream()
-                .filter(zombie -> !zombieSpawnedDuringTurn(turn, zombie.getId()))
-                .filter(zombie -> findActionEventForActorIdAndTurn(zombie.getId(), turn).size() < zombie.getActionsCount())
-                .map(Actor::getId)
-                .toList();
-    }
-
-    @Override
-    public List<Zombie> findAttackingZombies() {
+    override fun findZombieIdsWithRemainingActions(turn: Int): List<ActorId> {
         return findAllZombies()
-                .stream()
-                .filter(zombie -> {
-                    Zone zombieZone = zonesQueries.findByActorId(zombie.getId())
-                            .orElseThrow();
-                    return zonesQueries.findActorIdsOn(zombieZone.getPosition())
-                            .stream()
-                            .map(this::findLivingSurvivorBy)
-                            .anyMatch(Optional::isPresent);
-                })
-                .toList();
+            .filter { zombie -> !zombieSpawnedDuringTurn(turn, zombie.id) }
+            .filter { zombie -> findActionEventForActorIdAndTurn(zombie.id, turn).size < zombie.actionsCount }
+            .map(Actor::id)
     }
 
-    @Override
-    public DangerLevel getCurrentDangerLevel() {
+    override fun findAttackingZombies(): List<Zombie> {
+        return findAllZombies()
+            .filter { zombie ->
+                val zombieZone: Zone = zonesQueries.findByActorId(zombie.id)!!
+                zonesQueries.findActorIdsOn(zombieZone.position)
+                    .mapNotNull { id: ActorId -> findLivingSurvivorBy(id) }
+                    .any()
+            }
+    }
+
+    override fun getCurrentDangerLevel(): DangerLevel {
         return allLivingSurvivors()
-                .stream()
-                .map(Survivor::getDangerLevel)
-                .max(DangerLevel.DANGER_LEVEL_COMPARATOR)
-                .orElseThrow();
+            .map(Survivor::dangerLevel)
+            .maxWith(DangerLevel.DANGER_LEVEL_COMPARATOR)
     }
 }

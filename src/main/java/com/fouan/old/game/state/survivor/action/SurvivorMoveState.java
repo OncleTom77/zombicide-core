@@ -6,7 +6,7 @@ import com.fouan.old.command.Command;
 import com.fouan.old.command.SurvivorMoveCommand;
 import com.fouan.old.game.state.State;
 import com.fouan.old.game.state.StateContext;
-import com.fouan.old.io.ChoiceMaker;
+import com.fouan.display.ChoiceMaker;
 import com.fouan.display.Output;
 
 import javax.inject.Named;

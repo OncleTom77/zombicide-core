@@ -1,193 +1,171 @@
-package com.fouan.display;
+package com.fouan.display
 
-import com.fouan.actions.Actions;
-import com.fouan.actors.ActorId;
-import com.fouan.actors.Survivor;
-import com.fouan.actors.view.ActorsQueries;
-import com.fouan.actors.zombies.Zombie;
-import com.fouan.events.*;
-import com.fouan.game.view.GameView;
-import com.fouan.old.io.ChoiceMaker;
-import com.fouan.util.ListUtilKt;
-import com.fouan.zones.Position;
-import com.fouan.zones.Zone;
-import com.fouan.zones.view.ZonesQueries;
-import lombok.AllArgsConstructor;
-import org.springframework.context.event.EventListener;
-
-import javax.inject.Named;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.fouan.actors.Survivor
+import com.fouan.actors.view.ActorsQueries
+import com.fouan.actors.zombies.Zombie
+import com.fouan.events.*
+import com.fouan.game.view.GameView
+import com.fouan.util.mergeLists
+import com.fouan.zones.Position
+import com.fouan.zones.Zone
+import com.fouan.zones.view.ZonesQueries
+import mu.KotlinLogging
+import org.springframework.context.event.EventListener
+import javax.inject.Named
 
 @Named
-@AllArgsConstructor
-public final class ConsoleDisplayer {
-
-    private final Output output;
-    private final ZonesQueries zonesQueries;
-    private final ActorsQueries actorsQueries;
-    private final GameView gameView;
-    private final ChoiceMaker choiceMaker;
-    private final ActorSelection actorSelection;
+class ConsoleDisplayer(
+    private val output: Output,
+    private val zonesQueries: ZonesQueries,
+    private val actorsQueries: ActorsQueries,
+    private val gameView: GameView,
+    private val choiceMaker: ChoiceMaker,
+    private val actorSelection: ActorSelection
+) {
+    private val log = KotlinLogging.logger { }
 
     @EventListener
-    public void handleSurvivorAdded(SurvivorAdded event) {
-        output.display("Survivor " + event.getSurvivor().getName() + " added at " + event.getZone().getPosition().toString());
+    fun handleActorEvents(event: ActorEvent) {
+        log.info("{}(turn: {})", event.javaClass.simpleName, event.turn)
     }
 
     @EventListener
-    public void handleZombieSpawned(ZombieSpawned event) {
-        output.display("Zombie " + event.getZombie().getName() + " spawned at " + event.getZone().getPosition().toString());
+    fun handleSurvivorAdded(event: SurvivorAdded) {
+        output.display("Survivor ${event.survivor.name} added at ${event.zone.position}")
     }
 
     @EventListener
-    public void handleAvailableZonesForSurvivorMoveDefined(AvailableZonesForSurvivorMoveDefined event) {
-        var availableZones = event.getZones();
-        int choice = 0;
+    fun handleZombieSpawned(event: ZombieSpawned) {
+        output.display("Zombie ${event.zombie.name} spawned at ${event.zone.position}")
+    }
 
-        if (availableZones.size() > 1) {
-            output.display("Choose your action:");
-            for (int i = 0; i < availableZones.size(); i++) {
-                output.display(i + ": " + availableZones.get(i));
+    @EventListener
+    fun handleZombieDied(event: ZombieDied) {
+        val zombie = actorsQueries.findZombieBy(event.zombieId)!!
+        output.display("Zombie ${zombie.name} is dead")
+    }
+
+    @EventListener
+    fun handleAvailableZonesForSurvivorMoveDefined(event: AvailableZonesForSurvivorMoveDefined) {
+        val availableZones = event.zones
+        var choice = 0
+        if (availableZones.size > 1) {
+            output.display("Choose your action:")
+            for (i in availableZones.indices) {
+                output.display("$i: ${availableZones[i]}")
             }
-
-            choice = choiceMaker.getChoice(0, availableZones.size() - 1);
+            choice = choiceMaker.getChoice(0, availableZones.size - 1)
         }
-
-        var chosenZone = availableZones.get(choice);
-
-        gameView.fireEvent(new ZoneChosen(event.getTurn(), chosenZone.getPosition()));
+        val chosenZone = availableZones[choice]
+        gameView.fireEvent(ZoneChosen(event.turn, chosenZone.position))
     }
 
     @EventListener
-    public void handleAvailableActionsDefined(AvailableActionsDefined event) {
-        displayBoard();
-        Survivor playingSurvivor = actorsQueries.findCurrentSurvivorIdForTurn(event.getTurn())
-                .flatMap(actorsQueries::findLivingSurvivorBy)
-                .orElseThrow();
-        int remainingActions = actorsQueries.getRemainingActionsCountForActor(playingSurvivor.getId(), event.getTurn());
-        output.display(playingSurvivor + "'s turn. Remaining actions: " + remainingActions);
+    fun handleAvailableActionsDefined(event: AvailableActionsDefined) {
+        displayBoard()
+        val playingSurvivor = actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
+            ?.let { id -> actorsQueries.findLivingSurvivorBy(id) }!!
+        val remainingActions = actorsQueries.getRemainingActionsCountForActor(playingSurvivor.id, event.turn)
+        output.display("$playingSurvivor's turn. Remaining actions: $remainingActions")
 
-        var availableActions = event.getActions();
-        int choice = 0;
-
-        if (availableActions.size() > 1) {
-            output.display("Choose your action:");
-            for (int i = 0; i < availableActions.size(); i++) {
-                output.display(i + ": " + availableActions.get(i));
+        val availableActions = event.actions
+        var choice = 0
+        if (availableActions.size > 1) {
+            output.display("Choose your action:")
+            for (i in availableActions.indices) {
+                output.display("$i: ${availableActions[i]}")
             }
-
-            choice = choiceMaker.getChoice(0, availableActions.size() - 1);
+            choice = choiceMaker.getChoice(0, availableActions.size - 1)
         }
-
-        Actions chosenAction = availableActions.get(choice);
-
-        gameView.fireEvent(new ActionChosen(event.getTurn(), chosenAction));
+        val chosenAction = availableActions[choice]
+        gameView.fireEvent(ActionChosen(event.turn, chosenAction))
     }
 
     @EventListener
-    public void handleAvailableZombiesForSurvivorAttackDefined(AvailableZombiesForSurvivorAttackDefined event) {
-        var availableZombies = event.getZombies().stream().toList();
-
-        output.display("Choose your target!");
-        var chosenZombies = actorSelection.select(availableZombies, event.getNumberOfZombiesToChoose());
-
-        gameView.fireEvent(new ZombiesChosen(event.getTurn(), chosenZombies));
+    fun handleAvailableZombiesForSurvivorAttackDefined(event: AvailableZombiesForSurvivorAttackDefined) {
+        val availableZombies = event.zombies.toList()
+        output.display("Choose your target!")
+        val chosenZombies = actorSelection.select(availableZombies, event.numberOfZombiesToChoose)
+        gameView.fireEvent(ZombiesChosen(event.turn, chosenZombies))
     }
 
     @EventListener
-    public void handleSurvivorAttacked(SurvivorAttacked event) {
-        Survivor survivor = actorsQueries.findLivingSurvivorBy(event.getActorId())
-                .orElseThrow();
-        output.display("Dice roll: " + event.getAttackResult().rolls());
-        output.display(survivor.getName() + " attacked with " + event.getAttackResult().weapon() + " and hits " + event.getAttackResult().hitCount() + " target(s)");
+    fun handleSurvivorAttacked(event: SurvivorAttacked) {
+        val survivor = actorsQueries.findLivingSurvivorBy(event.actorId)!!
+        output.display("Dice roll: ${event.attackResult.rolls}")
+        output.display("${survivor.name} attacked with ${event.attackResult.weapon} and hits ${event.attackResult.hitCount} target(s)")
     }
 
     @EventListener
-    public void handleZombiesAttackingSurvivorsDefined(AvailableSurvivorsForZombiesAttackDefined event) {
-        List<Zombie> zombies = event.getZombieIds()
-                .stream()
-                .map(actorsQueries::findZombieBy)
-                .map(Optional::orElseThrow)
-                .toList();
-        List<Survivor> survivors = event.getSurvivorIds()
-                .stream()
-                .map(actorsQueries::findLivingSurvivorBy)
-                .map(Optional::orElseThrow)
-                .toList();
+    fun handleZombiesAttackingSurvivorsDefined(event: AvailableSurvivorsForZombiesAttackDefined) {
+        val zombies = event.zombieIds
+            .map { actorsQueries.findZombieBy(it)!! }
+        val survivors = event.survivorIds
+            .map { actorsQueries.findLivingSurvivorBy(it)!! }
+        val survivorNames = survivors
+            .map(Survivor::name)
+            .joinToString { ", " }
+        output.display("${zombies.size} zombie(s) are attacking $survivorNames on zone at position ${event.position}")
 
-        String survivorNames = survivors.stream()
-                .map(Survivor::getName)
-                .collect(Collectors.joining(", "));
-        output.display(zombies.size() + " zombie(s) are attacking " + survivorNames + " on zone at position " + event.getPosition());
+        val attackDistribution = mutableMapOf<Survivor, List<Zombie>>()
+        zombies.forEach { zombie: Zombie ->
+            output.display("Choose a target for the attack of $zombie")
+            output.display("Actual attack distribution: $attackDistribution")
 
-        Map<Survivor, List<Zombie>> attackDistribution = new HashMap<>();
-
-        zombies.forEach(zombie -> {
-            output.display("Choose a target for the attack of " + zombie);
-            output.display("Actual attack distribution: " + attackDistribution);
-
-            Survivor selectedSurvivor = actorSelection.select(survivors);
-            attackDistribution.merge(selectedSurvivor, List.of(zombie), ListUtilKt::mergeLists);
-        });
-
-        gameView.fireEvent(new ZombieAttacksDistributed(event.getTurn(), attackDistribution));
+            val selectedSurvivor = actorSelection.select(survivors)
+            attackDistribution.merge(selectedSurvivor, listOf(zombie)) { a, b -> mergeLists(a, b) }
+        }
+        gameView.fireEvent(ZombieAttacksDistributed(event.turn, attackDistribution))
     }
 
-    private void displayBoard() {
+    private fun displayBoard() {
         // Display board
-        List<Zone> zones = zonesQueries.findAll()
-                .stream()
-                .sorted(Zone.ZONE_POSITION_COMPARATOR)
-                .toList();
-        StringBuilder horizontalLine = new StringBuilder("-");
-        int width = getWidth(zones);
-        horizontalLine.append("-----".repeat(width));
+        val zones = zonesQueries.findAll()
+            .sortedWith(Zone.ZONE_POSITION_COMPARATOR)
+        val horizontalLine = StringBuilder("-")
+        val width = getWidth(zones)
+        horizontalLine.append("-----".repeat(width))
+        val line = StringBuilder()
 
-        StringBuilder line = new StringBuilder();
-        output.display(horizontalLine.toString());
-        for (int i = 0, zonesSize = zones.size(); i < zonesSize; i++) {
-            Zone zone = zones.get(i);
+        output.display(horizontalLine.toString())
+        for (i in zones.indices) {
+            val zone = zones[i]
             line.append("| ")
-                    .append(getStringRepresentation(zone))
-                    .append(" ");
-
-            boolean endOfLine = i % width == width - 1;
+                .append(getStringRepresentation(zone))
+                .append(" ")
+            val endOfLine = i % width == width - 1
             if (endOfLine) {
-                line.append("|");
-                output.display(line.toString());
-                line.delete(0, line.length());
-                output.display(horizontalLine.toString());
+                line.append("|")
+                output.display(line.toString())
+                line.deleteRange(0, line.length)
+                output.display(horizontalLine.toString())
             }
         }
     }
 
-    private int getWidth(List<Zone> zones) {
-        return zones.stream()
-                .map(Zone::getPosition)
-                .mapToInt(Position::getX)
-                .max()
-                .orElseThrow() + 1;
+    private fun getWidth(zones: List<Zone>): Int {
+        return zones.map(Zone::position)
+            .maxOfOrNull(Position::x)
+            ?.let { it + 1 }!!
     }
 
-    private String getStringRepresentation(Zone zone) {
-        Set<ActorId> actorIds = zonesQueries.findActorIdsOn(zone.getPosition());
-        boolean containsSurvivors = actorIds.stream()
-                .anyMatch(id -> actorsQueries.findLivingSurvivorBy(id).isPresent());
-        boolean containsZombies = actorIds.stream()
-                .anyMatch(id -> actorsQueries.findZombieBy(id).isPresent());
-        if (containsSurvivors) {
-            return "Su";
+    private fun getStringRepresentation(zone: Zone): String {
+        val actorIds = zonesQueries.findActorIdsOn(zone.position)
+        val containsSurvivors = actorIds.any { id -> actorsQueries.findLivingSurvivorBy(id) != null }
+        val containsZombies = actorIds.any { id -> actorsQueries.findZombieBy(id) != null }
+
+        return if (containsSurvivors) {
+            "Su"
         } else if (containsZombies) {
-            return "Zo";
-        } else if (zone.getMarkers().contains(Zone.ZoneMarker.STARTING_ZONE)) {
-            return "St";
-        } else if (zone.getMarkers().contains(Zone.ZoneMarker.EXIT_ZONE)) {
-            return "Ex";
-        } else if (zone.getMarkers().contains(Zone.ZoneMarker.ZOMBIE_SPAWN)) {
-            return "Sp";
+            "Zo"
+        } else if (zone.markers.contains(Zone.ZoneMarker.STARTING_ZONE)) {
+            "St"
+        } else if (zone.markers.contains(Zone.ZoneMarker.EXIT_ZONE)) {
+            "Ex"
+        } else if (zone.markers.contains(Zone.ZoneMarker.ZOMBIE_SPAWN)) {
+            "Sp"
         } else {
-            return "  ";
+            "  "
         }
     }
 }

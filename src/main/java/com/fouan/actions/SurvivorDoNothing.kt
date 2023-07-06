@@ -17,8 +17,7 @@ class SurvivorDoNothing(
     fun handleActionChosen(event: ActionChosen) {
         if (event.action !== Actions.NOTHING) return
 
-        val survivorId = actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
-            .orElseThrow()
+        val survivorId = actorsQueries.findCurrentSurvivorIdForTurn(event.turn)!!
         gameView.fireEvent(SurvivorsTurnEnded(event.turn, survivorId))
     }
 

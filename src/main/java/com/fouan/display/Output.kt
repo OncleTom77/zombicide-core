@@ -1,6 +1,5 @@
-package com.fouan.display;
+package com.fouan.display
 
-public interface Output {
-
-    void display(String value);
+interface Output {
+    fun display(value: String)
 }

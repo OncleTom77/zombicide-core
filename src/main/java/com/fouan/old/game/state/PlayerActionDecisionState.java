@@ -3,7 +3,7 @@ package com.fouan.old.game.state;
 import com.fouan.old.actor.Survivor;
 import com.fouan.old.command.Command;
 import com.fouan.old.game.state.survivor.action.SurvivorActionState;
-import com.fouan.old.io.ChoiceMaker;
+import com.fouan.display.ChoiceMaker;
 import com.fouan.display.Output;
 import org.springframework.context.annotation.Lazy;
 

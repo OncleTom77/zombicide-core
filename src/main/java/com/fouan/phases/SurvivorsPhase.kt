@@ -35,6 +35,7 @@ class SurvivorsPhase(
                     if (actorsQueries.getRemainingActionsCountForActor(it.id, turn) == 0) {
                         endSurvivorTurn(it, turn)
                     }
+                    //TODO: check survivor win
                 }
             }
     }

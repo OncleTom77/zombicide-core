@@ -1,7 +1,7 @@
 package com.fouan.old.game;
 
 import com.fouan.old.actor.Actor;
-import com.fouan.old.io.ChoiceMaker;
+import com.fouan.display.ChoiceMaker;
 import com.fouan.display.Output;
 
 import javax.inject.Named;

@@ -1,221 +1,176 @@
-package com.fouan.zones.view;
+package com.fouan.zones.view
 
-import com.fouan.actors.ActorId;
-import com.fouan.events.*;
-import com.fouan.old.game.Direction;
-import com.fouan.zones.Position;
-import com.fouan.zones.Zone;
-import com.fouan.zones.Zone.ZoneMarker;
-import org.springframework.context.event.EventListener;
-
-import javax.inject.Named;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.fouan.actors.ActorId
+import com.fouan.events.*
+import com.fouan.old.game.Direction
+import com.fouan.zones.Position
+import com.fouan.zones.Zone
+import com.fouan.zones.Zone.ZoneMarker
+import com.fouan.zones.view.ComputedZones.ComputedZone
+import org.springframework.context.event.EventListener
+import javax.inject.Named
 
 @Named
-public final class ZonesView implements ZonesCommands, ZonesQueries {
-
-    private final Deque<ZoneEvent> history = new LinkedList<>();
-    private final ComputedZones zones = new ComputedZones();
-    private final ComputedConnections connections = new ComputedConnections();
-
-    private final List<ActorId> survivorIds = new ArrayList<>();
+class ZonesView : ZonesCommands, ZonesQueries {
+    private val history: ArrayDeque<ZoneEvent> = ArrayDeque()
+    private val zones = ComputedZones()
+    private val connections = ComputedConnections()
+    private val survivorIds: MutableList<ActorId> = mutableListOf()
 
     @EventListener
-    public void handleZoneEvent(ZoneEvent event) {
-        history.push(event);
+    fun handleZoneEvent(event: ZoneEvent) {
+        history.addLast(event)
     }
 
     @EventListener
-    public void handleBoardInitialized(BoardInitialized event) {
-        for (Zone zone : event.getZones()) {
-            zones.add(new ComputedZones.ComputedZone(zone));
+    fun handleBoardInitialized(event: BoardInitialized) {
+        for (zone in event.zones) {
+            zones.add(ComputedZone(zone))
         }
-        event.getConnections()
-                .forEach(connections::add);
+        event.connections
+            .forEach { connections.add(it) }
     }
 
     @EventListener
-    public void handleSurvivorAdded(SurvivorAdded event) {
-        addActor(event.getSurvivor().getId(), event.getZone().getPosition());
-        survivorIds.add(event.getSurvivor().getId());
+    fun handleSurvivorAdded(event: SurvivorAdded) {
+        addActor(event.survivor.id, event.zone.position)
+        survivorIds.add(event.survivor.id)
     }
 
     @EventListener
-    public void handleZombieSpawned(ZombieSpawned event) {
-        addActor(event.getZombie().getId(), event.getZone().getPosition());
+    fun handleZombieSpawned(event: ZombieSpawned) {
+        addActor(event.zombie.id, event.zone.position)
     }
 
     @EventListener
-    public void handleSurvivorDied(SurvivorDied event) {
-        removeActor(event.getSurvivorId());
-        survivorIds.remove(event.getSurvivorId());
+    fun handleSurvivorDied(event: SurvivorDied) {
+        removeActor(event.survivorId)
+        survivorIds.remove(event.survivorId)
     }
 
     @EventListener
-    public void handleZombieDied(ZombieDied event) {
-        removeActor(event.getZombieId());
+    fun handleZombieDied(event: ZombieDied) {
+        removeActor(event.zombieId)
     }
 
-    private void addActor(ActorId actorMovedId, Position newPosition) {
-        zones.update(newPosition, computedZone -> {
-            List<ActorId> actorIds = new ArrayList<>(computedZone.getActorIds());
-            actorIds.add(actorMovedId);
-            return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
-        });
+    private fun addActor(actorMovedId: ActorId, newPosition: Position) {
+        zones.update(newPosition) { computedZone ->
+            val actorIds = computedZone.actorIds.toMutableList()
+            actorIds.add(actorMovedId)
+            ComputedZone(computedZone.zone, actorIds)
+        }
     }
 
-    private void removeActor(ActorId actorDiedId) {
-        ComputedZones.ComputedZone oldZone = zones.findByActorId(actorDiedId)
-                .orElseThrow();
-
-        zones.update(oldZone.getPosition(), computedZone -> {
-            List<ActorId> actorIds = computedZone.getActorIds()
-                    .stream()
-                    .filter(actorId -> !actorId.equals(actorDiedId))
-                    .toList();
-            return new ComputedZones.ComputedZone(computedZone.getZone(), actorIds);
-        });
+    private fun removeActor(actorDiedId: ActorId) {
+        val oldZone: ComputedZone = zones.findByActorId(actorDiedId)!!
+        zones.update(oldZone.position) { computedZone ->
+            val actorIds = computedZone.actorIds
+                .filter { it != actorDiedId }
+            ComputedZone(computedZone.zone, actorIds)
+        }
     }
 
     @EventListener
-    public void handleSurvivorMoved(SurvivorMoved event) {
-        moveActor(event.getActorId(), event.getPosition());
+    fun handleSurvivorMoved(event: SurvivorMoved) {
+        moveActor(event.actorId, event.position)
     }
 
     @EventListener
-    public void handleZombieMoved(ZombieMoved event) {
-        moveActor(event.getActorId(), event.getPosition());
+    fun handleZombieMoved(event: ZombieMoved) {
+        moveActor(event.actorId, event.position)
     }
 
-    private void moveActor(ActorId actorMovedId, Position newPosition) {
-        removeActor(actorMovedId);
-        addActor(actorMovedId, newPosition);
+    private fun moveActor(actorMovedId: ActorId, newPosition: Position) {
+        removeActor(actorMovedId)
+        addActor(actorMovedId, newPosition)
     }
 
-    @Override
-    public void clear() {
-        history.clear();
+    override fun clear() {
+        history.clear()
     }
 
-    @Override
-    public List<Zone> findAll() {
+    override fun findAll(): List<Zone> {
         return zones.all()
-                .stream()
-                .map(ComputedZones.ComputedZone::getZone)
-                .toList();
+            .map(ComputedZone::zone)
     }
 
-    @Override
-    public Set<Connection> findAllConnections() {
-        return connections.all();
+    override fun findAllConnections(): Set<Connection> {
+        return connections.all()
     }
 
-    @Override
-    public Optional<Zone> findByActorId(ActorId actorId) {
+    override fun findByActorId(actorId: ActorId): Zone? {
         return zones.all()
-                .stream()
-                .filter(computedZone -> computedZone.getActorIds().contains(actorId))
-                .map(ComputedZones.ComputedZone::getZone)
-                .findFirst();
+            .find { it.actorIds.contains(actorId) }
+            ?.zone
     }
 
-    @Override
-    public List<Zone> findByMarker(ZoneMarker marker) {
+    override fun findByMarker(marker: ZoneMarker): List<Zone> {
         return zones.all()
-                .stream()
-                .map(ComputedZones.ComputedZone::getZone)
-                .filter(zone -> zone.getMarkers().contains(marker))
-                .toList();
+            .map(ComputedZone::zone)
+            .filter { it.markers.contains(marker) }
     }
 
-    @Override
-    public Set<ActorId> findActorIdsOn(Position position) {
+    override fun findActorIdsOn(position: Position): Set<ActorId> {
         return zones.all()
-                .stream()
-                .filter(computedZone -> computedZone.getZone().getPosition().equals(position))
-                .map(ComputedZones.ComputedZone::getActorIds)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
+            .filter { it.zone.position == position }
+            .flatMap(ComputedZone::actorIds)
+            .toSet()
     }
 
-    @Override
-    public List<Zone> findConnectedZones(Zone zone) {
+    override fun findConnectedZones(zone: Zone): List<Zone> {
         return connections.findByZone(zone)
-                .stream()
-                .flatMap(connection -> Stream.of(connection.getStart(), connection.getEnd()))
-                .filter(connectedZone -> !connectedZone.equals(zone))
-                .distinct()
-                .toList();
+            .flatMap { connection -> listOf(connection.start, connection.end) }
+            .filter { it != zone }
+            .distinct()
     }
 
-    @Override
-    public List<Zone> findNoisiestZones(boolean withSurvivors) {
-        return findNoisiestZones(zones.all(), withSurvivors);
+    override fun findNoisiestZones(withSurvivors: Boolean): List<Zone> {
+        return findNoisiestZones(zones.all(), withSurvivors)
     }
 
-    private List<Zone> findNoisiestZones(Collection<ComputedZones.ComputedZone> zones, boolean withSurvivors) {
-        List<ZoneWithNoise> zoneWithNoises = zones.stream()
-                .map(computedZone -> {
-                    List<ActorId> survivorIdsOnZone = computedZone.getActorIds()
-                            .stream()
-                            .filter(this.survivorIds::contains)
-                            .toList();
-                    long noise = computedZone.getNoiseTokens() + survivorIdsOnZone.size();
-                    return new ZoneWithNoise(computedZone.getZone(), !survivorIdsOnZone.isEmpty(), noise);
-                })
-                .filter(zoneWithNoise -> !withSurvivors || zoneWithNoise.containsSurvivors)
-                .toList();
+    private fun findNoisiestZones(zones: Collection<ComputedZone>, withSurvivors: Boolean): List<Zone> {
+        val zoneWithNoises = zones
+            .map { computedZone ->
+                val survivorIdsOnZone = computedZone.actorIds
+                    .filter { actorId -> survivorIds.contains(actorId) }
+                val noise = computedZone.noiseTokens + survivorIdsOnZone.size
+                ZoneWithNoise(computedZone.zone, survivorIdsOnZone.isNotEmpty(), noise)
+            }
+            .filter { !withSurvivors || it.containsSurvivors }
 
         if (zoneWithNoises.isEmpty()) {
-            return Collections.emptyList();
+            return emptyList()
         }
-
-        long maxNoise = zoneWithNoises.stream()
-                .mapToLong(ZoneWithNoise::noise)
-                .max()
-                .orElseThrow();
-
-        return zoneWithNoises.stream()
-                .filter(zoneWithNoise -> zoneWithNoise.noise == maxNoise)
-                .map(ZoneWithNoise::zone)
-                .toList();
+        val maxNoise = zoneWithNoises.maxOf(ZoneWithNoise::noise)
+        return zoneWithNoises
+            .filter { it.noise == maxNoise }
+            .map(ZoneWithNoise::zone)
     }
 
-    @Override
-    public List<Zone> findNoisiestZonesInSight(Zone zone) {
-        var zonesInSight = findZonesInSight(zone)
-                .stream()
-                .map(zoneInSight -> zones.findByPosition(zoneInSight.getPosition())
-                        .orElseThrow())
-                .toList();
-        return findNoisiestZones(zonesInSight, true);
+    override fun findNoisiestZonesInSight(zone: Zone): List<Zone> {
+        val zonesInSight = findZonesInSight(zone)
+            .map { zones.findByPosition(it.position)!! }
+        return findNoisiestZones(zonesInSight, true)
     }
 
-    private List<Zone> findZonesInSight(Zone zone) {
-        return Arrays.stream(Direction.values())
-                .map(direction -> getAllZonesInDirection(zone, direction, new ArrayList<>()))
-                .flatMap(Collection::stream)
-                .toList();
+    private fun findZonesInSight(zone: Zone): List<Zone> {
+        return Direction.values()
+            .asList()
+            .flatMap { direction -> getAllZonesInDirection(zone, direction, mutableListOf()) }
     }
 
-    private List<Zone> getAllZonesInDirection(Zone zone, Direction direction, List<Zone> acc) {
-        Position nextPosition = direction.apply(zone.getPosition());
+    private fun getAllZonesInDirection(zone: Zone, direction: Direction, acc: MutableList<Zone>): List<Zone> {
+        val nextPosition = direction.apply(zone.position)
         connections.findByZone(zone)
-                .stream()
-                .map(connection -> connection.getEnd().equals(zone)
-                        ? connection.getStart()
-                        : connection.getEnd())
-                .filter(connectedZone -> connectedZone.getPosition().equals(nextPosition))
-                .findFirst()
-                .ifPresent(zoneInDirection -> {
-                    acc.add(zoneInDirection);
-                    getAllZonesInDirection(zoneInDirection, direction, acc);
-                });
-        return acc;
+            .map { if (it.end == zone) it.start else it.end }
+            .find { it.position == nextPosition }
+            ?.let {
+                acc.add(it)
+                getAllZonesInDirection(it, direction, acc)
+            }
+
+        return acc
     }
 
-    record ZoneWithNoise(Zone zone, boolean containsSurvivors, long noise) {
-    }
+    internal data class ZoneWithNoise(val zone: Zone, val containsSurvivors: Boolean, val noise: Int)
 }

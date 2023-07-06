@@ -1,10 +1,5 @@
-package com.fouan.actors.zombies;
+package com.fouan.actors.zombies
 
-import com.fouan.actors.ActorId;
+import com.fouan.actors.ActorId
 
-public final class Necromancer extends Zombie {
-
-    public Necromancer(ActorId id) {
-        super(id, "Necromancer", 2, 1, 1, 1);
-    }
-}
+class Necromancer(id: ActorId) : Zombie(id, "Necromancer", 2, 1, 1, 1)

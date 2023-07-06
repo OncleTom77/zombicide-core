@@ -1,3 +1,3 @@
-package com.fouan.weapons;
+package com.fouan.weapons
 
-public record AttackResult(Weapon weapon, java.util.List<Integer> rolls, int hitCount) { }
+data class AttackResult(val weapon: Weapon, val rolls: List<Int>, val hitCount: Int)

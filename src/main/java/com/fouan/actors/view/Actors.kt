@@ -2,12 +2,10 @@ package com.fouan.actors.view
 
 import com.fouan.actors.Actor
 import com.fouan.actors.ActorId
-import java.util.*
 import java.util.function.UnaryOperator
-import java.util.stream.Stream
 
 class Actors {
-    private val actors: MutableMap<ActorId, Actor> = HashMap()
+    private val actors: MutableMap<ActorId, Actor> = mutableMapOf()
 
     fun add(actor: Actor) {
         actors[actor.id] = actor
@@ -21,18 +19,16 @@ class Actors {
         actors.remove(actorId)
     }
 
-    fun findById(actorId: ActorId): Optional<Actor> {
-        return Optional.ofNullable(actors[actorId])
+    fun findById(actorId: ActorId): Actor? {
+        return actors[actorId]
     }
 
-    fun all(): Stream<Actor> {
-        return actors.values.stream()
+    fun all(): List<Actor> {
+        return actors.values.toList()
     }
 
     fun update(actorId: ActorId, updater: UnaryOperator<Actor>) {
-        val updatedActor = findById(actorId)
-            .map { updater.apply(it) }
-            .orElseThrow()
-        actors[actorId] = updatedActor
+        val actor = findById(actorId)!!
+        actors[actorId] = updater.apply(actor)
     }
 }

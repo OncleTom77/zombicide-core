@@ -1,43 +1,39 @@
-package com.fouan.old.cards;
+package com.fouan.util
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*
+import kotlin.collections.ArrayDeque
 
-public class Deck<T> {
-    protected final LinkedList<T> cards;
-    private final List<T> discard;
+class Deck<T>(cards: List<T>) {
+    protected val cards: ArrayDeque<T>
+    private val discard: MutableList<T>
 
-    public Deck(List<T> cards) {
-        this.cards = new LinkedList<>(cards);
-        discard = new ArrayList<>();
+    init {
+        this.cards = ArrayDeque(cards)
+        discard = ArrayList()
     }
 
-    public void shuffle() {
-        Collections.shuffle(cards);
+    fun shuffle() {
+        Collections.shuffle(cards)
     }
 
-    public T drawCard() {
+    fun drawCard(): T {
         if (cards.isEmpty()) {
-            refill();
+            refill()
         }
-        T card = cards.pop();
-        discard.add(card);
-        return card;
+        val card = cards.removeFirst()
+        discard.add(card)
+        return card
     }
 
-    public void refill() {
-        cards.addAll(discard);
-        discard.clear();
-        shuffle();
+    fun refill() {
+        cards.addAll(discard)
+        discard.clear()
+        shuffle()
     }
 
-    @Override
-    public String toString() {
-        return "Deck: " + cards.stream()
-                .map(T::toString)
-                .collect(Collectors.joining(","));
+    override fun toString(): String {
+        return "Deck: " + cards.joinToString(",") { obj ->
+            obj.toString()
+        }
     }
 }

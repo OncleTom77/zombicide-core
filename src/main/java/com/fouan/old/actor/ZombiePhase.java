@@ -9,7 +9,7 @@ import com.fouan.old.command.GenerateZombieAfterSplitCommand;
 import com.fouan.old.command.MoveCommand;
 import com.fouan.old.command.ZombieAttackCommand;
 import com.fouan.old.game.ActorSelection;
-import com.fouan.old.io.ChoiceMaker;
+import com.fouan.display.ChoiceMaker;
 import com.fouan.display.Output;
 import com.fouan.old.utils.ListUtils;
 

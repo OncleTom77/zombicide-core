@@ -1,95 +1,68 @@
-package com.fouan.game.view;
+package com.fouan.game.view
 
-import com.fouan.actors.ActorId;
-import com.fouan.actors.view.ActorsCommands;
-import com.fouan.actors.view.ActorsQueries;
-import com.fouan.dice.DiceRoller;
-import com.fouan.events.*;
-import com.fouan.zones.view.ZonesCommands;
-import lombok.AllArgsConstructor;
-import org.springframework.context.event.EventListener;
-
-import javax.inject.Named;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import com.fouan.actors.ActorId
+import com.fouan.actors.view.ActorsCommands
+import com.fouan.actors.view.ActorsQueries
+import com.fouan.dice.DiceRoller
+import com.fouan.events.*
+import com.fouan.zones.view.ZonesCommands
+import org.springframework.context.event.EventListener
+import javax.inject.Named
 
 @Named
-@AllArgsConstructor
-final class DefaultGameView implements GameView {
-
-    private final Deque<GameEvent> gameHistory = new LinkedList<>();
-    private final List<Event<?>> history = new LinkedList<>();
-
-    private final ActorsCommands actorsCommands;
-    private final ActorsQueries actorsQueries;
-    private final ZonesCommands zonesCommands;
-
-    private final EventsPublisher eventsPublisher;
-    private final DiceRoller diceRoller;
+internal class DefaultGameView(
+    private val actorsCommands: ActorsCommands,
+    private val actorsQueries: ActorsQueries,
+    private val zonesCommands: ZonesCommands,
+    private val eventsPublisher: EventsPublisher,
+    private val diceRoller: DiceRoller
+) : GameView {
+    private val gameHistory: ArrayDeque<GameEvent> = ArrayDeque()
+    private val history: ArrayDeque<Event<*>> = ArrayDeque()
 
     @EventListener
-    public void handleGameEvents(GameEvent event) {
-        gameHistory.push(event);
+    fun handleGameEvents(event: GameEvent) {
+        gameHistory.addFirst(event)
     }
 
     @EventListener
-    public void handleAllEvents(Event<?> event) {
-        history.add(event);
+    fun handleAllEvents(event: Event<*>) {
+        history.add(event)
     }
 
     @EventListener
-    public void handleSurvivorDied(SurvivorDied event) {
+    fun handleSurvivorDied(event: SurvivorDied) {
         if (actorsQueries.allLivingSurvivors().isEmpty()) {
-            fireEvent(new SurvivorsDefeated(event.getTurn()));
+            fireEvent(SurvivorsDefeated(event.turn))
         }
     }
 
-    @Override
-    public int getCurrentTurn() {
-        return Optional.ofNullable(gameHistory.peek())
-                .map(GameEvent::getTurn)
-                .orElse(0);
+    override val currentTurn: Int
+        get() = gameHistory.firstOrNull()?.turn ?: 0
+
+    override fun fireEvent(event: Event<*>) {
+        eventsPublisher.fire(event)
     }
 
-    @Override
-    public void fireEvent(Event<?> event) {
-        eventsPublisher.fire(event);
+    override fun rollDice(): Int {
+        return diceRoller.roll()
     }
 
-    @Override
-    public int rollDice() {
-        return diceRoller.roll();
+    override fun isTurnEnded(actorId: ActorId): Boolean {
+        val turn = currentTurn
+        return history.filterIsInstance<SurvivorsTurnEnded>()
+            .any { it.actorId == actorId && it.turn == turn }
     }
 
-    @Override
-    public boolean isTurnEnded(ActorId actorId) {
-        int turn = getCurrentTurn();
-        return history.stream()
-                .filter(event -> event instanceof SurvivorsTurnEnded)
-                .map(event -> (SurvivorsTurnEnded) event)
-                .anyMatch(survivorsTurnEnded -> survivorsTurnEnded.getActorId().equals(actorId) && survivorsTurnEnded.getTurn() == turn);
-    }
+    override val isGameDone: Boolean
+        get() = gameHistory.any { it is EndGameEvent }
 
-    @Override
-    public boolean isGameDone() {
-        return gameHistory.stream()
-                .anyMatch(EndGameEvent.class::isInstance);
-    }
-
-    @Override
-    public void rollbackTurn(int turn) {
-
-        var eventsToRestore = history.stream()
-                .filter(hist -> hist.getTurn() < turn)
-                .toList();
-
-        actorsCommands.clear();
-        zonesCommands.clear();
-        gameHistory.clear();
-        history.clear();
-
-        eventsToRestore.forEach(eventsPublisher::fire);
+    override fun rollbackTurn(turn: Int) {
+        val eventsToRestore = history.filter { hist -> hist.turn < turn }
+        actorsCommands.clear()
+        zonesCommands.clear()
+        gameHistory.clear()
+        history.clear()
+        eventsToRestore.forEach { eventsPublisher.fire(it) }
     }
 }

@@ -1,10 +1,5 @@
-package com.fouan.actors.zombies;
+package com.fouan.actors.zombies
 
-import com.fouan.actors.ActorId;
+import com.fouan.actors.ActorId
 
-public final class Fatty extends Zombie {
-
-    public Fatty(ActorId id) {
-        super(id, "Fatty", 3, 2, 1, 1);
-    }
-}
+class Fatty(id: ActorId) : Zombie(id, "Fatty", 3, 2, 1, 1)

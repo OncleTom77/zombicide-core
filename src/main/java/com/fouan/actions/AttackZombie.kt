@@ -22,8 +22,7 @@ class AttackZombie(
         if (event.action !== Actions.COMBAT) return
 
         val survivor = actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
-            .flatMap { actorsQueries.findLivingSurvivorBy(it) }
-            .orElseThrow()
+            ?.let { actorsQueries.findLivingSurvivorBy(it) }!!
 
         // TODO: choose among all survivor's weapons
         val attackResult = survivor.weapon.use(diceRoller)
@@ -41,8 +40,7 @@ class AttackZombie(
     @EventListener
     fun handleZombiesChosen(event: ZombiesChosen) {
         val survivor = actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
-            .flatMap { actorsQueries.findLivingSurvivorBy(it) }
-            .orElseThrow()
+            ?.let { actorsQueries.findLivingSurvivorBy(it) }!!
 
         event.chosenZombies.forEach {
             gameView.fireEvent(
@@ -61,10 +59,8 @@ class AttackZombie(
     }
 
     override fun isPossible(): Boolean {
-        val survivorId = actorsQueries.findCurrentSurvivorIdForTurn(gameView.currentTurn)
-            .orElseThrow()
         // TODO: With distance weapons, check for each survivor's equipped weapon if a zombie is in range
-        return actorsQueries.findAllZombiesOnSameZoneAsSurvivor(survivorId)
-            .isNotEmpty()
+        return actorsQueries.findCurrentSurvivorIdForTurn(gameView.currentTurn)
+            ?.let { actorsQueries.findAllZombiesOnSameZoneAsSurvivor(it).isNotEmpty() }!!
     }
 }

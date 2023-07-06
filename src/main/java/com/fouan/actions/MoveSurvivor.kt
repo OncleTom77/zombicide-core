@@ -22,17 +22,16 @@ class MoveSurvivor(
         if (event.action !== Actions.MOVE) return
 
         val zones = actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
-                .flatMap { zonesQueries.findByActorId(it) }
-                .map { zonesQueries.findConnectedZones(it) }
-                .orElseThrow()
+            ?.let { zonesQueries.findByActorId(it) }
+            ?.let { zonesQueries.findConnectedZones(it) }!!
         gameView.fireEvent(AvailableZonesForSurvivorMoveDefined(event.turn, zones))
     }
 
     @EventListener
     fun handleZoneChosen(event: ZoneChosen) {
         actorsQueries.findCurrentSurvivorIdForTurn(event.turn)
-                .flatMap { actorsQueries.findLivingSurvivorBy(it) }
-                .ifPresent { gameView.fireEvent(SurvivorMoved(event.turn, it.id, event.position)) }
+            ?.let { actorsQueries.findLivingSurvivorBy(it) }
+            ?.let { gameView.fireEvent(SurvivorMoved(event.turn, it.id, event.position)) }
     }
 
     override fun getAction(): Actions {
@@ -41,9 +40,8 @@ class MoveSurvivor(
 
     override fun isPossible(): Boolean {
         return actorsQueries.findCurrentSurvivorIdForTurn(gameView.currentTurn)
-            .flatMap { zonesQueries.findByActorId(it) }
-            .map { zonesQueries.findConnectedZones(it) }
-            .orElseThrow()
+            ?.let { zonesQueries.findByActorId(it) }
+            ?.let { zonesQueries.findConnectedZones(it) }!!
             .isNotEmpty()
     }
 }

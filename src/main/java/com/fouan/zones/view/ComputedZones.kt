@@ -1,68 +1,42 @@
-package com.fouan.zones.view;
+package com.fouan.zones.view
 
-import com.fouan.actors.ActorId;
-import com.fouan.zones.Position;
-import com.fouan.zones.Zone;
-import lombok.Getter;
+import com.fouan.actors.ActorId
+import com.fouan.zones.Position
+import com.fouan.zones.Zone
+import java.util.function.UnaryOperator
 
-import java.util.*;
-import java.util.function.UnaryOperator;
+class ComputedZones {
+    private val zones: MutableMap<Position, ComputedZone> = mutableMapOf()
 
-public final class ComputedZones {
-
-    private final Map<Position, ComputedZone> zones;
-
-    public ComputedZones() {
-        zones = new HashMap<>();
+    fun all(): Collection<ComputedZone> {
+        return zones.values
     }
 
-    public Collection<ComputedZone> all() {
-        return zones.values();
+    fun add(zone: ComputedZone) {
+        check(!zones.containsKey(zone.position)) { "Zone already exists" }
+        zones[zone.position] = zone
     }
 
-    public void add(ComputedZone zone) {
-        if (zones.containsKey(zone.getPosition())) {
-            throw new IllegalStateException("Zone already exists");
-        }
-
-        zones.put(zone.getPosition(), zone);
-    }
-
-    public void update(Position position, UnaryOperator<ComputedZone> updater) {
+    fun update(position: Position, updater: UnaryOperator<ComputedZone>) {
         findByPosition(position)
-                .map(updater)
-                .ifPresent(computedZone -> zones.put(position, computedZone));
+            ?.let { zones[position] = updater.apply(it) }
     }
 
-    public Optional<ComputedZone> findByPosition(Position position) {
-        return Optional.ofNullable(zones.get(position));
+    fun findByPosition(position: Position): ComputedZone? {
+        return zones[position]
     }
 
-    public Optional<ComputedZone> findByActorId(ActorId actorId) {
-        return zones.values()
-                .stream()
-                .filter(computedZone -> computedZone.actorIds.contains(actorId))
-                .findFirst();
+    fun findByActorId(actorId: ActorId): ComputedZone? {
+        return zones.values
+            .find { it.actorIds.contains(actorId) }
     }
 
-    @Getter
-    public static class ComputedZone {
-        private final Zone zone;
-
-        private final List<ActorId> actorIds;
-        private final int noiseTokens = 0;
-
-        public ComputedZone(Zone zone) {
-            this(zone, Collections.emptyList());
-        }
-
-        public ComputedZone(Zone zone, List<ActorId> actorIds) {
-            this.zone = zone;
-            this.actorIds = actorIds;
-        }
-
-        public Position getPosition() {
-            return zone.getPosition();
-        }
+    class ComputedZone(
+        val zone: Zone,
+        val actorIds: List<ActorId> = emptyList()
+    ) {
+        val noiseTokens = 0
+        val position: Position
+            get() = zone.position
     }
 }
