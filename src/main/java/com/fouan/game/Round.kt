@@ -19,8 +19,14 @@ class Round(
         while (!gameView.isGameDone) {
             logger.info { "Start round" }
             survivorsPhase.play()
+
+            if (gameView.isGameDone) {
+                break
+            }
+
             zombiesPhase.play()
             logger.info { "End round" }
+            // TODO: change first player
         }
     }
 }

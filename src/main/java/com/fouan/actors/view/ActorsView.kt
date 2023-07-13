@@ -39,7 +39,7 @@ class ActorsView(private val zonesQueries: ZonesQueries, private val eventsPubli
         // TODO: 28/01/2023 Should we add methods in ActorsCommands to add/remove actors?
         actors.remove(zombie)
         eventsPublisher.fire(
-            SurvivorGainedExperience(event.turn, event.attackerId, zombie.experienceProvided)
+            SurvivorGainedExperience(event.turn, event.actorId, zombie.experienceProvided)
         )
     }
 

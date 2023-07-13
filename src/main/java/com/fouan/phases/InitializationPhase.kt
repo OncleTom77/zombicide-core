@@ -36,7 +36,7 @@ internal class InitializationPhase(
             val position = Position(index % width, index / width)
             when (position) {
                 Position(0, 0) -> Zone.startingZone(position)
-                Position(width - 1, height - 1) -> Zone.exitZone(position)
+                Position(0, 1) -> Zone.exitZone(position)
                 Position(1, 0) -> Zone.zombieSpawnZone(position)
                 else -> Zone.normalZone(position)
             }
