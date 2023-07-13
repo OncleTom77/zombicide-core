@@ -2,7 +2,7 @@ package com.fouan.zones.view
 
 import com.fouan.actors.ActorId
 import com.fouan.events.*
-import com.fouan.old.game.Direction
+import com.fouan.zones.Direction
 import com.fouan.zones.Position
 import com.fouan.zones.Zone
 import com.fouan.zones.Zone.ZoneMarker

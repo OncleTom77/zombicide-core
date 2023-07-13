@@ -1,6 +1,6 @@
 package com.fouan.spawn
 
-import com.fouan.old.cards.Deck
+import com.fouan.util.Deck
 
 class ZombieSpawnCardDeck {
     private val deck: Deck<ZombieSpawnCard>

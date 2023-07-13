@@ -6,7 +6,7 @@ abstract class Weapon protected constructor(val range: Range, val dice: Int, val
 
     fun use(diceRoller: DiceRoller): AttackResult {
         val rolls = (0 until dice)
-            .map { _: Int -> diceRoller.roll() }
+            .map { _ -> diceRoller.roll() }
         val hitCount = rolls.count { roll -> roll >= accuracy }
         return AttackResult(this, rolls, hitCount)
     }

@@ -1,7 +1,7 @@
 package com.fouan.algorithm.pathfinding;
 
-import com.fouan.algorithm.pathfinding.old.Dijkstra;
-import com.fouan.algorithm.pathfinding.old.ZombicidePathFinder;
+import com.fouan.old.algorithm.pathfinding.Dijkstra;
+import com.fouan.old.algorithm.pathfinding.ZombicidePathFinder;
 import com.fouan.old.board.Zone;
 import com.fouan.old.board.Zones;
 

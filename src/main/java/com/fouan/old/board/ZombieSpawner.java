@@ -3,7 +3,7 @@ package com.fouan.old.board;
 import com.fouan.old.actor.ActorFactory;
 import com.fouan.actors.DangerLevel;
 import com.fouan.old.actor.ZombieType;
-import com.fouan.old.cards.Deck;
+import com.fouan.util.Deck;
 import com.fouan.old.cards.SpawnInfo;
 import com.fouan.old.cards.ZombieSpawnCard;
 import com.fouan.old.command.Command;

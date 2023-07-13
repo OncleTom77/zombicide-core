@@ -1,4 +1,4 @@
-package com.fouan.algorithm.pathfinding.old;
+package com.fouan.old.algorithm.pathfinding;
 
 import com.fouan.old.board.Zone;
 import com.fouan.old.board.Zones;

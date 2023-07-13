@@ -15,7 +15,7 @@ import javax.inject.Named
 @Named
 class ActorsView(private val zonesQueries: ZonesQueries, private val eventsPublisher: EventsPublisher) : ActorsCommands,
     ActorsQueries {
-    private val history: MutableList<ActorEvent> = mutableListOf()
+    private val history: ArrayDeque<ActorEvent> = ArrayDeque()
     private val actors = Actors()
 
     @EventListener

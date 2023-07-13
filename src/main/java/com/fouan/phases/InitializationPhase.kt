@@ -7,8 +7,8 @@ import com.fouan.events.BoardInitialized
 import com.fouan.events.SurvivorAdded
 import com.fouan.events.ZombieSpawned
 import com.fouan.game.view.GameView
-import com.fouan.old.game.Direction
 import com.fouan.weapons.Axe
+import com.fouan.zones.Direction
 import com.fouan.zones.Position
 import com.fouan.zones.Zone
 import com.fouan.zones.view.Connection
