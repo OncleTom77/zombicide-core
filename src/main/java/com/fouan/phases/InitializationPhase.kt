@@ -2,6 +2,7 @@ package com.fouan.phases
 
 import com.fouan.actors.ActorId
 import com.fouan.actors.Survivor
+import com.fouan.actors.view.SurvivorToken
 import com.fouan.actors.zombies.Walker
 import com.fouan.events.BoardInitialized
 import com.fouan.events.SurvivorAdded
@@ -55,7 +56,7 @@ internal class InitializationPhase(
     }
 
     private fun initializeSurvivors() {
-        val asim = Survivor(ActorId("Asim"), 3, "Asim", Axe(), 0, 3)
+        val asim = Survivor(ActorId("Asim"), 3, "Asim", Axe(), 0, 3, setOf(SurvivorToken.FIRST_PLAYER))
         val berin = Survivor(ActorId("Berin"), 3, "Berin", Axe(), 0, 3)
 
         val startingZone = zonesQueries.findByMarker(Zone.ZoneMarker.STARTING_ZONE)[0]

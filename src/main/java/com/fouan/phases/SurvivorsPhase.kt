@@ -5,11 +5,13 @@ import com.fouan.actions.SurvivorAction
 import com.fouan.actors.ActorId
 import com.fouan.actors.Survivor
 import com.fouan.actors.view.ActorsQueries
+import com.fouan.actors.view.SurvivorToken
 import com.fouan.events.AvailableActionsDefined
 import com.fouan.events.SurvivorsTurnEnded
 import com.fouan.events.SurvivorsTurnStarted
 import com.fouan.events.SurvivorsWon
 import com.fouan.game.view.GameView
+import com.fouan.util.mergeLists
 import com.fouan.zones.Zone
 import com.fouan.zones.view.ZonesQueries
 import mu.KotlinLogging
@@ -27,9 +29,8 @@ class SurvivorsPhase(
 
     override fun play() {
         val turn = gameView.currentTurn + 1
-        // TODO: determine survivor playing order based on First Player token
 
-        val allLivingSurvivors = actorsQueries.allLivingSurvivors()
+        val allLivingSurvivors = getSurvivorInPlayingOrder(actorsQueries.allLivingSurvivors())
         for (it in allLivingSurvivors) {
             startSurvivorTurn(it.id, turn)
 
@@ -39,7 +40,7 @@ class SurvivorsPhase(
 
                 checkSurvivorWin()
 
-                if (actorsQueries.getRemainingActionsCountForActor(it.id, turn) == 0 || gameView.isGameDone) {
+                if (actorsQueries.getRemainingActionsCountForActor(it.id, turn) <= 0 || gameView.isGameDone) {
                     endSurvivorTurn(it, turn)
                 }
             }
@@ -48,6 +49,13 @@ class SurvivorsPhase(
                 break
             }
         }
+    }
+
+    private fun getSurvivorInPlayingOrder(survivors: List<Survivor>): List<Survivor> {
+        val firstPlayerIndex = survivors.indexOfFirst { it.tokens.contains(SurvivorToken.FIRST_PLAYER) }
+        val firstPlayers = survivors.slice(firstPlayerIndex until survivors.size)
+        val lastPlayers = survivors.slice(0 until firstPlayerIndex)
+        return mergeLists(firstPlayers, lastPlayers)
     }
 
     private fun getPossibleActions(): List<Actions> {

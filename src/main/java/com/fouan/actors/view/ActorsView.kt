@@ -46,23 +46,61 @@ class ActorsView(private val zonesQueries: ZonesQueries, private val eventsPubli
     @EventListener
     fun handleSurvivorLostLifePoints(event: SurvivorLostLifePoints) {
         val survivorDied = AtomicBoolean(false)
-        actors.update(event.survivorId) { actor: Actor ->
-            val survivor = actor as Survivor
+        actors.update(event.survivorId) {
+            val survivor = it as Survivor
             val remainingLifePoints = survivor.lifePoints - event.damage
             if (remainingLifePoints <= 0) {
                 survivorDied.set(true)
             }
+            // TODO: change survivor instanciation for a builder that initiates all values from actual survivor
             Survivor(
-                actor.id,
+                it.id,
                 remainingLifePoints,
                 survivor.name,
                 survivor.weapon,
                 survivor.experience,
-                survivor.actionsCount
+                survivor.actionsCount,
+                survivor.tokens
             )
         }
         if (survivorDied.get()) {
             eventsPublisher.fire(SurvivorDied(event.turn, event.survivorId))
+        }
+    }
+
+    @EventListener
+    fun handleSurvivorTokenRemoved(event: SurvivorTokenRemoved) {
+        actors.update(event.survivorId) {
+            val survivor = it as Survivor
+            val updatedTokens = survivor.tokens.minus(event.token).toSet()
+
+            Survivor(
+                it.id,
+                survivor.lifePoints,
+                survivor.name,
+                survivor.weapon,
+                survivor.experience,
+                survivor.actionsCount,
+                updatedTokens
+            )
+        }
+    }
+
+    @EventListener
+    fun handleSurvivorTokenAdded(event: SurvivorTokenAdded) {
+        actors.update(event.survivorId) {
+            val survivor = it as Survivor
+            val updatedTokens = survivor.tokens.plus(event.token).toSet()
+
+            Survivor(
+                it.id,
+                survivor.lifePoints,
+                survivor.name,
+                survivor.weapon,
+                survivor.experience,
+                survivor.actionsCount,
+                updatedTokens
+            )
         }
     }
 

@@ -1,6 +1,7 @@
 package com.fouan.actors
 
 import com.fouan.actors.view.LifeStatus
+import com.fouan.actors.view.SurvivorToken
 import com.fouan.weapons.Weapon
 
 class Survivor(
@@ -10,6 +11,7 @@ class Survivor(
     val weapon: Weapon,
     val experience: Int,
     actionsCount: Int,
+    val tokens: Set<SurvivorToken> = emptySet()
 ) : Actor(
     id, actionsCount
 ) {
@@ -28,7 +30,7 @@ class Survivor(
         if (name != other.name) return false
         if (weapon != other.weapon) return false
         if (experience != other.experience) return false
-        return dangerLevel == other.dangerLevel
+        return tokens == other.tokens
     }
 
     override fun hashCode(): Int {
@@ -36,11 +38,11 @@ class Survivor(
         result = 31 * result + name.hashCode()
         result = 31 * result + weapon.hashCode()
         result = 31 * result + experience
-        result = 31 * result + dangerLevel.hashCode()
+        result = 31 * result + tokens.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "Survivor(name='$name', lifePoints=$lifePoints)"
+        return "Survivor(name='$name', lifePoints=$lifePoints, tokens=$tokens)"
     }
 }
