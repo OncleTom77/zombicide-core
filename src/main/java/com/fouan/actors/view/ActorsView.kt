@@ -35,7 +35,7 @@ class ActorsView(private val zonesQueries: ZonesQueries, private val eventsPubli
 
     @EventListener
     fun handleZombieDied(event: ZombieDied) {
-        val zombie = findZombieBy(event.zombieId)!!
+        val zombie = findZombieBy(event.zombie.id)!!
         // TODO: 28/01/2023 Should we add methods in ActorsCommands to add/remove actors?
         actors.remove(zombie)
         eventsPublisher.fire(

@@ -50,7 +50,7 @@ class ZonesView : ZonesCommands, ZonesQueries {
 
     @EventListener
     fun handleZombieDied(event: ZombieDied) {
-        removeActor(event.zombieId)
+        removeActor(event.zombie.id)
     }
 
     private fun addActor(actorMovedId: ActorId, newPosition: Position) {

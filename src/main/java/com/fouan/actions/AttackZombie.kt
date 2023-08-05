@@ -46,7 +46,7 @@ class AttackZombie(
             gameView.fireEvent(
                 ZombieDied(
                     event.turn,
-                    it.id,
+                    it,
                     survivor.id,
                     survivor.weapon
                 )

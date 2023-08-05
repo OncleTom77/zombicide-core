@@ -41,8 +41,7 @@ class ConsoleDisplayer(
 
     @EventListener
     fun handleZombieDied(event: ZombieDied) {
-        val zombie = actorsQueries.findZombieBy(event.zombieId)!!
-        output.display("Zombie ${zombie.name} is dead")
+        output.display("Zombie ${event.zombie.name} is dead")
     }
 
     @EventListener
