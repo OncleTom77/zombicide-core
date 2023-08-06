@@ -52,16 +52,9 @@ class ActorsView(private val zonesQueries: ZonesQueries, private val eventsPubli
             if (remainingLifePoints <= 0) {
                 survivorDied.set(true)
             }
-            // TODO: change survivor instanciation for a builder that initiates all values from actual survivor
-            Survivor(
-                it.id,
-                remainingLifePoints,
-                survivor.name,
-                survivor.weapon,
-                survivor.experience,
-                survivor.actionsCount,
-                survivor.tokens
-            )
+            Survivor.Builder(survivor)
+                .withLifePoints(remainingLifePoints)
+                .build()
         }
         if (survivorDied.get()) {
             eventsPublisher.fire(SurvivorDied(event.turn, event.survivorId))
@@ -74,15 +67,9 @@ class ActorsView(private val zonesQueries: ZonesQueries, private val eventsPubli
             val survivor = it as Survivor
             val updatedTokens = survivor.tokens.minus(event.token).toSet()
 
-            Survivor(
-                it.id,
-                survivor.lifePoints,
-                survivor.name,
-                survivor.weapon,
-                survivor.experience,
-                survivor.actionsCount,
-                updatedTokens
-            )
+            Survivor.Builder(survivor)
+                .withTokens(updatedTokens)
+                .build()
         }
     }
 
@@ -92,15 +79,9 @@ class ActorsView(private val zonesQueries: ZonesQueries, private val eventsPubli
             val survivor = it as Survivor
             val updatedTokens = survivor.tokens.plus(event.token).toSet()
 
-            Survivor(
-                it.id,
-                survivor.lifePoints,
-                survivor.name,
-                survivor.weapon,
-                survivor.experience,
-                survivor.actionsCount,
-                updatedTokens
-            )
+            Survivor.Builder(survivor)
+                .withTokens(updatedTokens)
+                .build()
         }
     }
 

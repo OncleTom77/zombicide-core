@@ -30,18 +30,18 @@ class SurvivorsPhase(
     override fun play() {
         val turn = gameView.currentTurn + 1
 
-        val allLivingSurvivors = getSurvivorInPlayingOrder(actorsQueries.allLivingSurvivors())
-        for (it in allLivingSurvivors) {
-            startSurvivorTurn(it.id, turn)
+        val allLivingSurvivors = getSurvivorsInPlayingOrder(actorsQueries.allLivingSurvivors())
+        for (playingSurvivor in allLivingSurvivors) {
+            startSurvivorTurn(playingSurvivor.id, turn)
 
-            while (!gameView.isTurnEnded(it.id)) {
+            while (!gameView.isTurnEnded(playingSurvivor.id)) {
                 val possibleActions = getPossibleActions()
                 gameView.fireEvent(AvailableActionsDefined(turn, possibleActions))
 
                 checkSurvivorWin()
 
-                if (actorsQueries.getRemainingActionsCountForActor(it.id, turn) <= 0 || gameView.isGameDone) {
-                    endSurvivorTurn(it, turn)
+                if (actorsQueries.getRemainingActionsCountForActor(playingSurvivor.id, turn) <= 0 || gameView.isGameDone) {
+                    endSurvivorTurn(playingSurvivor, turn)
                 }
             }
 
@@ -51,7 +51,7 @@ class SurvivorsPhase(
         }
     }
 
-    private fun getSurvivorInPlayingOrder(survivors: List<Survivor>): List<Survivor> {
+    private fun getSurvivorsInPlayingOrder(survivors: List<Survivor>): List<Survivor> {
         val firstPlayerIndex = survivors.indexOfFirst { it.tokens.contains(SurvivorToken.FIRST_PLAYER) }
         val firstPlayers = survivors.slice(firstPlayerIndex until survivors.size)
         val lastPlayers = survivors.slice(0 until firstPlayerIndex)
