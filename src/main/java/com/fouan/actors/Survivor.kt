@@ -45,4 +45,30 @@ class Survivor(
     override fun toString(): String {
         return "Survivor(name='$name', lifePoints=$lifePoints, tokens=$tokens)"
     }
+
+    data class Builder(
+        val id: ActorId,
+        var lifePoints: Int,
+        val name: String,
+        var weapon: Weapon,
+        var experience: Int,
+        var actionsCount: Int,
+        var tokens: Set<SurvivorToken> = emptySet()
+    ) {
+
+        constructor(survivor: Survivor) : this(
+            survivor.id,
+            survivor.lifePoints,
+            survivor.name,
+            survivor.weapon,
+            survivor.experience,
+            survivor.actionsCount,
+            survivor.tokens
+        )
+
+        fun withLifePoints(lifePoints: Int) = apply { this.lifePoints = lifePoints }
+        fun withTokens(tokens: Set<SurvivorToken>) = apply { this.tokens = tokens }
+
+        fun build() = Survivor(id, lifePoints, name, weapon, experience, actionsCount, tokens)
+    }
 }
