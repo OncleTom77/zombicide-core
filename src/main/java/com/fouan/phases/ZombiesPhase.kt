@@ -5,9 +5,10 @@ import com.fouan.actors.ActorId
 import com.fouan.actors.DangerLevel
 import com.fouan.actors.Survivor
 import com.fouan.actors.view.ActorsQueries
+import com.fouan.actors.zombies.Fatty
 import com.fouan.actors.zombies.Walker
 import com.fouan.actors.zombies.Zombie
-import com.fouan.algorithm.pathfinding.ZombicidePathFinder
+import com.fouan.algorithm.pathfinding.PathFinder
 import com.fouan.events.*
 import com.fouan.game.view.GameView
 import com.fouan.spawn.ZombieSpawnCardDeck
@@ -23,7 +24,7 @@ class ZombiesPhase(
     private val gameView: GameView,
     private val actorsQueries: ActorsQueries,
     private val zonesQueries: ZonesQueries,
-    private val pathFinder: ZombicidePathFinder,
+    private val pathFinder: PathFinder,
 ) : Phase {
 
     private val zombieSpawnCardDeck = ZombieSpawnCardDeck()
@@ -119,7 +120,7 @@ class ZombiesPhase(
         splitZombiesInEqualGroups(zombies, nextZones)
     }
 
-    private fun splitZombiesInEqualGroups(zombies: List<Zombie>, nextZones: Set<Zone>) {
+    fun splitZombiesInEqualGroups(zombies: List<Zombie>, nextZones: Set<Zone>) {
         zombies.groupBy { it::class }
             .forEach {
                 val remainingZombies = ArrayDeque(it.value)
@@ -138,9 +139,10 @@ class ZombiesPhase(
     private fun generateZombie(zombieType: KClass<out Zombie>, zone: Zone) {
         val newZombie = when (zombieType) {
             Walker::class -> Walker(ActorId())
+            Fatty::class -> Fatty(ActorId())
             else -> throw NotImplementedError()
         }
-        gameView.fireEvent(ZombieSpawned(gameView.currentTurn, newZombie, zone))
+        gameView.fireEvent(ZombieSpawned(gameView.currentTurn, newZombie, zone.position))
     }
 
     private fun moveZombie(zombie: Zombie, zone: Zone) {

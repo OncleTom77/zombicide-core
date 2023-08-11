@@ -10,10 +10,10 @@ import javax.inject.Named
 class ZombicidePathFinder(
     private val shortestPath: Dijkstra,
     private val zonesQueries: ZonesQueries
-) {
+) : PathFinder {
     private val logger = Logger.getLogger(ZombicidePathFinder::class.java.name)
 
-    fun findNextZoneOfAllShortestPaths(from: Zone, to: Zone): List<Zone> {
+    override fun findNextZoneOfAllShortestPaths(from: Zone, to: Zone): List<Zone> {
         val routePerConnectedZones = shortestPath.findRoutes(
             zonesQueries.findAll(),
             zonesQueries.findAllConnections(),

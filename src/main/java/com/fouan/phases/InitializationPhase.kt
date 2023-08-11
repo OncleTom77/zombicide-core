@@ -14,7 +14,6 @@ import com.fouan.zones.Position
 import com.fouan.zones.Zone
 import com.fouan.zones.view.Connection
 import com.fouan.zones.view.ZonesQueries
-import java.util.*
 import javax.inject.Named
 
 @Named("initializationPhase")
@@ -66,7 +65,7 @@ internal class InitializationPhase(
 
     private fun initializeZombies() {
         val zombieSpawnZone = zonesQueries.findByMarker(Zone.ZoneMarker.ZOMBIE_SPAWN)[0]
-        gameView.fireEvent(ZombieSpawned(gameView.currentTurn, Walker(ActorId("1")), zombieSpawnZone))
-        gameView.fireEvent(ZombieSpawned(gameView.currentTurn, Walker(ActorId("2")), zombieSpawnZone))
+        gameView.fireEvent(ZombieSpawned(gameView.currentTurn, Walker(ActorId("1")), zombieSpawnZone.position))
+        gameView.fireEvent(ZombieSpawned(gameView.currentTurn, Walker(ActorId("2")), zombieSpawnZone.position))
     }
 }

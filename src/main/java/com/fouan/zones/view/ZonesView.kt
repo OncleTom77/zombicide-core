@@ -39,7 +39,7 @@ class ZonesView : ZonesCommands, ZonesQueries {
 
     @EventListener
     fun handleZombieSpawned(event: ZombieSpawned) {
-        addActor(event.zombie.id, event.zone.position)
+        addActor(event.zombie.id, event.position)
     }
 
     @EventListener

@@ -36,7 +36,7 @@ class ConsoleDisplayer(
 
     @EventListener
     fun handleZombieSpawned(event: ZombieSpawned) {
-        output.display("Zombie ${event.zombie.name} spawned at ${event.zone.position}")
+        output.display("Zombie ${event.zombie.name} spawned at ${event.position}")
     }
 
     @EventListener

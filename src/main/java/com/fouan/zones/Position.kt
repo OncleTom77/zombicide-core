@@ -2,7 +2,7 @@ package com.fouan.zones
 
 import kotlin.math.abs
 
-class Position(val x: Int, private val y: Int) {
+class Position(val x: Int, val y: Int) {
     fun plusX(value: Int): Position = Position(x + value, y)
 
     fun minusX(value: Int): Position = plusX(-value)
