@@ -1,0 +1,84 @@
+package com.fouan.phases
+
+import com.fouan.actions.Actions
+import com.fouan.actions.SurvivorAction
+import com.fouan.actors.ActorId
+import com.fouan.actors.Survivor
+import com.fouan.actors.view.ActorsQueries
+import com.fouan.actors.view.SurvivorToken
+import com.fouan.events.AvailableActionsDefined
+import com.fouan.events.SurvivorsTurnEnded
+import com.fouan.events.SurvivorsTurnStarted
+import com.fouan.events.SurvivorsWon
+import com.fouan.game.view.GameView
+import com.fouan.util.mergeLists
+import com.fouan.zones.Zone
+import com.fouan.zones.view.ZonesQueries
+import mu.KotlinLogging
+import javax.inject.Named
+
+@Named
+class SurvivorsPhase(
+    private val gameView: GameView,
+    private val actorsQueries: ActorsQueries,
+    private val zonesQueries: ZonesQueries,
+    private val actions: List<SurvivorAction>
+) : Phase {
+
+    private val logger = KotlinLogging.logger { }
+
+    override fun play() {
+        val turn = gameView.currentTurn + 1
+
+        val allLivingSurvivors = getSurvivorsInPlayingOrder(actorsQueries.allLivingSurvivors())
+        for (playingSurvivor in allLivingSurvivors) {
+            startSurvivorTurn(playingSurvivor.id, turn)
+
+            while (!gameView.isTurnEnded(playingSurvivor.id)) {
+                val possibleActions = getPossibleActions()
+                gameView.fireEvent(AvailableActionsDefined(turn, possibleActions))
+
+                checkSurvivorWin()
+
+                if (actorsQueries.getRemainingActionsCountForActor(playingSurvivor.id, turn) <= 0 || gameView.isGameDone) {
+                    endSurvivorTurn(playingSurvivor, turn)
+                }
+            }
+
+            if (gameView.isGameDone) {
+                break
+            }
+        }
+    }
+
+    private fun getSurvivorsInPlayingOrder(survivors: List<Survivor>): List<Survivor> {
+        val firstPlayerIndex = survivors.indexOfFirst { it.tokens.contains(SurvivorToken.FIRST_PLAYER) }
+        val firstPlayers = survivors.slice(firstPlayerIndex until survivors.size)
+        val lastPlayers = survivors.slice(0 until firstPlayerIndex)
+        return mergeLists(firstPlayers, lastPlayers)
+    }
+
+    private fun getPossibleActions(): List<Actions> {
+        return actions.filter { it.isPossible() }
+            .map { it.getAction() }
+    }
+
+    private fun startSurvivorTurn(survivorId: ActorId, turn: Int) {
+        gameView.fireEvent(SurvivorsTurnStarted(turn, survivorId))
+    }
+
+    private fun endSurvivorTurn(survivor: Survivor, turn: Int) {
+        gameView.fireEvent(SurvivorsTurnEnded(turn, survivor.id))
+    }
+
+    private fun checkSurvivorWin() {
+        val exitZone = zonesQueries.findByMarker(Zone.ZoneMarker.EXIT_ZONE)[0]
+        val livingActorIds = actorsQueries.allLivingSurvivors()
+            .map { it.id }
+            .toSet()
+
+        if (zonesQueries.findActorIdsOn(exitZone.position) == livingActorIds) {
+            gameView.fireEvent(SurvivorsWon(gameView.currentTurn))
+        }
+    }
+}
